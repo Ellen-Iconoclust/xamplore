@@ -438,9 +438,15 @@ function showSection(id){
 }
 
 /* BACKEND CONFIGURATION */
-const BACKEND_URL = window.location.hostname === 'localhost' 
-  ? 'http://localhost:3001' 
-  : 'https://your-vercel-app-url.vercel.app'; // Replace with your Vercel URL
+/* BACKEND CONFIGURATION - AUTO DETECT */
+const BACKEND_URL = (function() {
+  // If developing locally
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return 'http://localhost:3000';
+  }
+  // For production, use the same origin (Vercel will handle routing)
+  return window.location.origin;
+})(); // Replace with your Vercel URL
 
 /* HANGMAN GAME DATA */
 const HANGMAN_WORDS = [
