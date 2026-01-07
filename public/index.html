@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Xamplore – Secure Exam</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- Lucide -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+
+<style>
+* { user-select:none; -webkit-user-select:none; }
+body { font-family:'Poppins',sans-serif; overflow-x: hidden; }
+.brand { font-family:'Montserrat',sans-serif; }
+input[type="password"] { user-select: none; -webkit-user-select: none; }
+</style>
+</head>
+
+<body class="bg-white text-gray-800 min-h-screen flex flex-col">
+
+<!-- WELCOME POPUP -->
+<div id="welcomePopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+    <button onclick="closeWelcomePopup()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+      <i data-lucide="x"></i>
+    </button>
+    <div class="flex items-center gap-2 mb-4">
+      <i data-lucide="graduation-cap" class="text-emerald-600"></i>
+      <h3 class="text-xl font-bold text-emerald-600">Welcome to Xamplore!</h3>
+    </div>
+    <p class="text-gray-600 mb-4">
+      Ready to test your knowledge? Head over to the <span class="font-semibold text-emerald-600">Test</span> section in the menu to take secure exams.
+    </p>
+    <div class="text-sm text-gray-500">
+      <i data-lucide="info" class="inline w-4 h-4 mr-1"></i>
+      Platform Version: <span class="font-bold">Xam2.0</span>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="border-b shadow-sm sticky top-0 bg-white z-40">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-2 brand text-2xl font-extrabold text-emerald-600">
+      <i data-lucide="graduation-cap"></i> Xamplore
+      <span class="text-xs font-normal bg-emerald-100 text-emerald-700 px-2 py-1 rounded">v2.0</span>
+    </div>
+
+    <div class="hidden md:flex gap-8 font-semibold">
+      <button onclick="showSection('home')">Home</button>
+      <button onclick="showSection('test')">Test</button>
+      <button onclick="showSection('hangman')">Hangman</button>
+      <button onclick="showSection('about')">About</button>
+    </div>
+
+    <button class="md:hidden" onclick="toggleMenu()">
+      <i data-lucide="menu"></i>
+    </button>
+  </div>
+
+  <div id="mobileMenu" class="hidden md:hidden px-6 pb-4 space-y-3 font-semibold">
+    <button onclick="showSection('home')" class="block">Home</button>
+    <button onclick="showSection('test')" class="block">Test</button>
+    <button onclick="showSection('hangman')" class="block">Hangman</button>
+    <button onclick="showSection('about')" class="block">About</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<section id="home" class="py-20 text-center">
+  <h1 class="text-4xl font-extrabold brand text-emerald-600">
+    Smarter Exams
+  </h1>
+  <p class="mt-3 text-xl font-semibold">Built for SRCAS Students</p>
+
+  <p class="mt-6 max-w-xl mx-auto text-gray-600">
+    Xamplore is a secure online examination platform designed to
+    reduce malpractice and ensure fair evaluation.
+  </p>
+
+  <!-- FEATURES -->
+  <div class="mt-16 max-w-5xl mx-auto grid md:grid-cols-3 gap-8 px-6">
+    <div class="p-6 border rounded-xl shadow-sm">
+      <h3 class="font-bold text-emerald-600">Secure Environment</h3>
+      <p class="text-sm mt-2 text-gray-600">
+        Fullscreen enforcement, tab monitoring, and anti-copy protections.
+      </p>
+    </div>
+    <div class="p-6 border rounded-xl shadow-sm">
+      <h3 class="font-bold text-emerald-600">Backend Protected</h3>
+      <p class="text-sm mt-2 text-gray-600">
+        One-time test attempts with backend verification and tracking.
+      </p>
+    </div>
+    <div class="p-6 border rounded-xl shadow-sm">
+      <h3 class="font-bold text-emerald-600">Instant Reports</h3>
+      <p class="text-sm mt-2 text-gray-600">
+        Downloadable PDFs with full answer transparency.
+      </p>
+    </div>
+  </div>
+
+  <!-- WHY -->
+  <div class="mt-20 max-w-3xl mx-auto px-6">
+    <h2 class="text-2xl font-bold text-emerald-600">
+      Enhanced Security with Backend
+    </h2>
+    <p class="mt-4 text-gray-600">
+      Xamplore now features backend verification to prevent multiple attempts. Each student can only take the test once, and test results are securely stored. Second-chance access requires special authorization.
+    </p>
+  </div>
+</section>
+
+<!-- TEST -->
+<section id="test" class="hidden py-16">
+  <div class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-xl">
+
+    <!-- REGISTRATION/LOGIN -->
+    <div id="registration">
+      <h2 class="text-2xl font-bold mb-4 text-emerald-600">Exam Registration</h2>
+      <p class="text-sm text-gray-600 mb-4">Register with your name and password. If you already registered, use the same credentials to login.</p>
+      
+      <input id="nameInput" class="w-full p-2 mb-3 border rounded" placeholder="Your Full Name">
+      <input id="passwordInput" type="password" class="w-full p-2 mb-3 border rounded" placeholder="Create/Enter Password">
+      
+      <div id="registrationMessage" class="text-sm mb-3 hidden"></div>
+      
+      <button onclick="registerOrLogin()" class="w-full bg-emerald-600 text-white p-2 rounded font-semibold">
+        Register / Login
+      </button>
+      
+      <div id="userStatus" class="mt-4 p-3 rounded hidden"></div>
+    </div>
+
+    <!-- PATTERN SELECTION -->
+    <div id="patternSelection" class="hidden">
+      <h2 class="text-xl font-bold text-emerald-600 mb-4">Select Exam Pattern</h2>
+      <select id="patternSelect" class="w-full p-2 mb-4 border rounded">
+        <option value="">Select Pattern</option>
+        <option value="A">Pattern A</option>
+        <option value="B">Pattern B</option>
+        <option value="C">Pattern C</option>
+      </select>
+      
+      <div id="patternMessage" class="text-sm mb-3 hidden"></div>
+      
+      <button onclick="verifyPattern()" class="w-full bg-emerald-600 text-white p-2 rounded">
+        Start Exam Rules
+      </button>
+    </div>
+
+    <!-- RULES -->
+    <div id="rules" class="hidden">
+      <h2 class="text-xl font-bold text-emerald-600 mb-3">Rules & Regulations</h2>
+      <ul class="list-disc pl-5 text-sm space-y-2 mb-4">
+        <li>No tab switching - test will fail immediately</li>
+        <li>No exiting fullscreen - test will fail immediately</li>
+        <li>No screenshots or copy actions</li>
+        <li>One attempt only per student</li>
+        <li>Violations end the test permanently</li>
+      </ul>
+      <div class="bg-yellow-50 border-l-4 border-yellow-500 p-3 mb-4">
+        <p class="text-sm text-yellow-700">
+          <i data-lucide="alert-triangle" class="inline w-4 h-4 mr-1"></i>
+          <strong>Important:</strong> You can only take this test once. Make sure you're ready!
+        </p>
+      </div>
+      <button onclick="startExam()" class="mt-2 w-full bg-emerald-600 text-white p-2 rounded">
+        I Agree & Start Exam
+      </button>
+    </div>
+
+    <!-- EXAM -->
+    <div id="exam" class="hidden">
+      <div class="flex justify-between items-center mb-4">
+        <span class="font-semibold text-emerald-600" id="questionCounter">Question 1/30</span>
+        <span class="text-sm bg-red-100 text-red-700 px-2 py-1 rounded" id="securityStatus">Security Active</span>
+      </div>
+      <div id="questionBox" class="mb-4"></div>
+      <button onclick="nextQuestion()" class="mt-4 w-full bg-emerald-600 text-white p-2 rounded">
+        Next Question
+      </button>
+    </div>
+
+    <!-- TEST FAILED -->
+    <div id="failed" class="hidden text-center">
+      <div class="mb-4">
+        <i data-lucide="x-circle" class="w-16 h-16 text-red-500 mx-auto"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-red-600 mb-2">Test Terminated</h2>
+      <p class="text-gray-600 mb-4">Due to security violation or test failure.</p>
+      
+      <div class="bg-red-50 border border-red-200 rounded p-4 mb-4">
+        <p class="text-sm text-red-700">
+          <i data-lucide="lock" class="inline w-4 h-4 mr-1"></i>
+          Enter the second chance password to retake the test from start.
+        </p>
+      </div>
+      
+      <input
+        id="secondPass"
+        type="password"
+        autocomplete="new-password"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        readonly
+        onfocus="this.removeAttribute('readonly'); this.setAttribute('autocomplete', 'off');"
+        class="w-full p-2 mt-3 border rounded mb-3"
+        placeholder="Second Chance Authorization Code"
+      />
+      
+      <button onclick="secondChance()" class="mt-2 w-full bg-emerald-600 text-white p-2 rounded">
+        Authorize Retake
+      </button>
+    </div>
+
+    <!-- RESULT -->
+    <div id="result" class="hidden text-center">
+      <div class="mb-4">
+        <i data-lucide="award" class="w-16 h-16 text-emerald-500 mx-auto"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-emerald-600">Test Completed</h2>
+      <p id="resultText" class="mt-3 text-lg font-semibold"></p>
+      
+      <div id="pdfStatus" class="mt-4 p-3 rounded hidden"></div>
+      
+      <div class="mt-6 space-y-3">
+        <button onclick="downloadPDF()" id="downloadBtn" class="w-full bg-emerald-600 text-white p-2 rounded font-semibold">
+          <i data-lucide="download" class="inline w-4 h-4 mr-2"></i>
+          Download PDF Certificate
+        </button>
+        
+        <button onclick="showSection('home')" class="w-full bg-gray-200 text-gray-700 p-2 rounded">
+          Return to Home
+        </button>
+      </div>
+    </div>
+
+    <!-- ALREADY COMPLETED -->
+    <div id="alreadyCompleted" class="hidden text-center">
+      <div class="mb-4">
+        <i data-lucide="check-circle" class="w-16 h-16 text-emerald-500 mx-auto"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-emerald-600">Test Already Completed</h2>
+      <p class="mt-3 text-gray-600 mb-4">
+        You have already completed the test and downloaded the certificate. 
+        You cannot retake the test or download the PDF again.
+      </p>
+      <button onclick="showSection('home')" class="w-full bg-emerald-600 text-white p-2 rounded">
+        Return to Home
+      </button>
+    </div>
+
+  </div>
+</section>
+
+<!-- HANGMAN GAME -->
+<section id="hangman" class="hidden py-16">
+  <div class="max-w-4xl mx-auto px-4">
+    <h2 class="text-3xl font-bold text-center text-emerald-600 mb-8">Tech Hangman</h2>
+    
+    <div class="grid md:grid-cols-2 gap-8">
+      <!-- Game Area -->
+      <div class="bg-white p-6 rounded-xl shadow-lg border">
+        <div class="text-center mb-6">
+          <div class="text-2xl font-mono mb-4" id="hangmanWordDisplay"></div>
+          <div class="text-sm text-gray-600 mb-2">Category: <span class="font-bold text-emerald-600">Computer Technology</span></div>
+          <div class="text-sm">Lives: <span id="livesCount" class="font-bold text-red-600">7</span></div>
+        </div>
+
+        <div class="mb-6">
+          <div class="flex flex-wrap gap-2 justify-center mb-4" id="letterButtons"></div>
+          <div class="text-center">
+            <button onclick="resetHangman()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition">
+              New Game
+            </button>
+          </div>
+        </div>
+
+        <div class="text-center">
+          <div id="hangmanMessage" class="font-semibold mb-4"></div>
+          <div id="hangmanHint" class="text-sm text-gray-600 italic"></div>
+        </div>
+      </div>
+
+      <!-- Instructions & Stats -->
+      <div class="space-y-6">
+        <div class="bg-gray-50 p-6 rounded-xl border">
+          <h3 class="font-bold text-lg text-emerald-600 mb-3">How to Play</h3>
+          <ul class="space-y-2 text-sm text-gray-600">
+            <li>• Guess the computer technology related word</li>
+            <li>• Click letters to make guesses</li>
+            <li>• You have 7 lives</li>
+            <li>• Incorrect guesses reduce lives</li>
+            <li>• Win by guessing all letters</li>
+          </ul>
+        </div>
+
+        <div class="bg-gray-50 p-6 rounded-xl border">
+          <h3 class="font-bold text-lg text-emerald-600 mb-3">Game Stats</h3>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="text-center">
+              <div class="text-2xl font-bold text-emerald-600" id="gamesWon">0</div>
+              <div class="text-gray-600">Games Won</div>
+            </div>
+            <div class="text-center">
+              <div class="text-2xl font-bold text-red-600" id="gamesLost">0</div>
+              <div class="text-gray-600">Games Lost</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 p-6 rounded-xl border">
+          <h3 class="font-bold text-lg text-emerald-600 mb-3">Word Bank</h3>
+          <p class="text-sm text-gray-600">
+            Contains over 70+ computer technology terms including programming languages, frameworks, hardware, and software concepts.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="hidden py-20">
+  <div class="max-w-4xl mx-auto px-6">
+    <h2 class="text-3xl font-bold text-center text-emerald-600 mb-8">About Xamplore</h2>
+    
+    <div class="bg-white p-8 rounded-xl shadow-lg border">
+      <div class="text-center mb-6">
+        <span class="inline-block bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full font-bold text-sm">
+          Version: Xam2.0 with Backend
+        </span>
+      </div>
+
+      <div class="space-y-6 text-gray-700">
+        <p>
+          <strong class="text-emerald-600">Xamplore v2.0</strong> now features a complete backend system that prevents multiple test attempts and securely tracks student performance. The backend ensures exam integrity by allowing only one attempt per student and requires special authorization for retakes.
+        </p>
+
+        <div class="border-l-4 border-emerald-500 pl-4 py-2 bg-emerald-50">
+          <h3 class="font-bold text-lg text-emerald-700 mb-2">Enhanced Security Features</h3>
+          <ul class="list-disc pl-5 space-y-1">
+            <li>One-time test attempt enforcement</li>
+            <li>Backend verification of student identity</li>
+            <li>Secure password-based registration</li>
+            <li>Automatic test completion tracking</li>
+            <li>PDF download limitation to prevent multiple certificates</li>
+          </ul>
+        </div>
+
+        <h3 class="text-xl font-bold text-emerald-600 mt-6">How It Works</h3>
+        <ol class="list-decimal pl-6 space-y-2">
+          <li>Student registers with name and password</li>
+          <li>Backend verifies if test can be taken</li>
+          <li>Test begins with full security monitoring</li>
+          <li>Results are sent to backend upon completion</li>
+          <li>PDF can be downloaded once only</li>
+          <li>System prevents further attempts automatically</li>
+        </ol>
+
+        <div class="bg-gray-50 p-4 rounded-lg mt-8">
+          <p class="text-sm text-gray-600">
+            <i data-lucide="database" class="inline w-4 h-4 mr-1"></i>
+            <strong>Data Security:</strong> All student data is stored securely and only basic information is retained. The backend operates on Vercel serverless functions for maximum reliability.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="mt-auto border-t py-6 text-center">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="text-sm text-gray-600">
+        <span class="inline-flex items-center">
+          <i data-lucide="copyright" class="w-4 h-4 mr-1"></i>
+          Xamplore All Rights Reserved
+        </span>
+      </div>
+      
+      <div class="text-sm text-gray-600">
+        Made by
+        <a href="https://ellen-dev.vercel.app" target="_blank"
+           class="text-emerald-600 font-semibold hover:underline">
+          Ellen Iconoclust
+        </a>
+      </div>
+      
+      <div class="text-xs text-gray-500">
+        Platform Version: <span class="font-bold">Xam2.0</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+lucide.createIcons();
+
+// Show welcome popup on load
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(() => {
+    document.getElementById('welcomePopup').classList.remove('hidden');
+  }, 500);
+});
+
+function closeWelcomePopup() {
+  document.getElementById('welcomePopup').classList.add('hidden');
+}
+
+/* NAV */
+function toggleMenu(){ 
+  document.getElementById('mobileMenu').classList.toggle("hidden"); 
+}
+
+function showSection(id){
+  ["home","test","hangman","about"].forEach(s=>document.getElementById(s).classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  document.getElementById('mobileMenu').classList.add("hidden");
+  if(id === 'hangman') {
+    setTimeout(initializeHangman, 100);
+  }
+  if(id === 'test') {
+    resetTestInterface();
+  }
+}
+
+/* BACKEND CONFIGURATION */
+const BACKEND_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:3001' 
+  : 'https://your-vercel-app-url.vercel.app'; // Replace with your Vercel URL
+
+/* HANGMAN GAME DATA */
+const HANGMAN_WORDS = [
+  "javascript", "python", "java", "typescript", "kotlin", "swift", "ruby", "php", "go", "rust",
+  "csharp", "cpp", "c", "scala", "perl", "haskell", "lua", "r", "dart", "elixir",
+  "react", "angular", "vue", "django", "flask", "spring", "express", "laravel", "rails", "ember",
+  "mysql", "postgresql", "mongodb", "redis", "cassandra", "elasticsearch", "sqlite", "oracle", "dynamodb",
+  "docker", "kubernetes", "git", "jenkins", "ansible", "terraform", "vagrant", "grafana", "prometheus",
+  "algorithm", "blockchain", "encryption", "firewall", "virtualization", "container", "microservice", "serverless",
+  "devops", "agile", "scrum", "api", "rest", "graphql", "websocket", "machinelearning", "artificialintelligence"
+];
+
+const HANGMAN_HINTS = {
+  "javascript": "Client-side scripting language for web interactivity",
+  "python": "Popular language known for its readability and versatility",
+  "react": "Facebook's UI library for building component-based interfaces",
+  "docker": "Containerization platform for packaging applications",
+  "blockchain": "Decentralized digital ledger technology",
+  "algorithm": "Step-by-step procedure for calculations",
+  "kubernetes": "Container orchestration system for automation",
+  "typescript": "Microsoft's typed superset of JavaScript",
+  "mongodb": "NoSQL document-oriented database",
+  "devops": "Combination of development and operations practices"
+};
+
+let hangmanGame = {
+  word: "",
+  display: [],
+  guessed: [],
+  lives: 7,
+  gamesWon: 0,
+  gamesLost: 0,
+  gameActive: false
+};
+
+function initializeHangman() {
+  if (!hangmanGame.gameActive) {
+    startNewHangmanGame();
+  }
+}
+
+function startNewHangmanGame() {
+  hangmanGame.word = HANGMAN_WORDS[Math.floor(Math.random() * HANGMAN_WORDS.length)];
+  hangmanGame.display = hangmanGame.word.split('').map(() => '_');
+  hangmanGame.guessed = [];
+  hangmanGame.lives = 7;
+  hangmanGame.gameActive = true;
+  
+  updateHangmanDisplay();
+  createLetterButtons();
+  updateHangmanMessage("");
+  updateHint();
+  
+  document.getElementById('gamesWon').textContent = hangmanGame.gamesWon;
+  document.getElementById('gamesLost').textContent = hangmanGame.gamesLost;
+  document.getElementById('livesCount').textContent = hangmanGame.lives;
+}
+
+function updateHangmanDisplay() {
+  document.getElementById('hangmanWordDisplay').textContent = hangmanGame.display.join(' ');
+}
+
+function createLetterButtons() {
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
+  const container = document.getElementById('letterButtons');
+  container.innerHTML = '';
+  
+  letters.split('').forEach(letter => {
+    const button = document.createElement('button');
+    button.textContent = letter.toUpperCase();
+    button.className = 'w-10 h-10 rounded-lg border hover:bg-emerald-50 transition ' + 
+      (hangmanGame.guessed.includes(letter) ? 'bg-gray-200 cursor-not-allowed' : 'bg-white');
+    button.disabled = hangmanGame.guessed.includes(letter);
+    button.onclick = () => guessLetter(letter);
+    container.appendChild(button);
+  });
+}
+
+function guessLetter(letter) {
+  if (!hangmanGame.gameActive || hangmanGame.guessed.includes(letter)) return;
+  
+  hangmanGame.guessed.push(letter);
+  
+  if (hangmanGame.word.includes(letter)) {
+    hangmanGame.word.split('').forEach((char, index) => {
+      if (char === letter) {
+        hangmanGame.display[index] = letter;
+      }
+    });
+    updateHangmanMessage(`Good guess! "${letter.toUpperCase()}" is in the word.`);
+  } else {
+    hangmanGame.lives--;
+    updateHangmanMessage(`Wrong guess! "${letter.toUpperCase()}" is not in the word. Lives remaining: ${hangmanGame.lives}`);
+  }
+  
+  updateHangmanDisplay();
+  createLetterButtons();
+  document.getElementById('livesCount').textContent = hangmanGame.lives;
+  
+  checkGameStatus();
+}
+
+function checkGameStatus() {
+  if (!hangmanGame.display.includes('_')) {
+    hangmanGame.gameActive = false;
+    hangmanGame.gamesWon++;
+    updateHangmanMessage(`Congratulations! You guessed the word: ${hangmanGame.word.toUpperCase()}`);
+    document.getElementById('gamesWon').textContent = hangmanGame.gamesWon;
+  } else if (hangmanGame.lives <= 0) {
+    hangmanGame.gameActive = false;
+    hangmanGame.gamesLost++;
+    updateHangmanMessage(`Game Over! The word was: ${hangmanGame.word.toUpperCase()}`);
+    document.getElementById('gamesLost').textContent = hangmanGame.gamesLost;
+    hangmanGame.display = hangmanGame.word.split('');
+    updateHangmanDisplay();
+  }
+}
+
+function updateHangmanMessage(message) {
+  document.getElementById('hangmanMessage').textContent = message;
+  document.getElementById('hangmanMessage').className = 'font-semibold mb-4 ' + 
+    (message.includes('Congratulations') ? 'text-emerald-600' : 
+     message.includes('Game Over') ? 'text-red-600' : 'text-gray-700');
+}
+
+function updateHint() {
+  const hint = HANGMAN_HINTS[hangmanGame.word] || "Computer technology related term";
+  document.getElementById('hangmanHint').textContent = `Hint: ${hint}`;
+}
+
+function resetHangman() {
+  startNewHangmanGame();
+}
+
+/* TEST SYSTEM WITH BACKEND INTEGRATION */
+
+// Global state
+let currentUser = null;
+let testData = {
+  studentName: '',
+  pattern: '',
+  questions: [],
+  answers: [],
+  currentQuestion: 0,
+  examStarted: false,
+  pdfDownloaded: false
+};
+
+// Reset test interface
+function resetTestInterface() {
+  document.getElementById('registration').classList.remove('hidden');
+  document.getElementById('patternSelection').classList.add('hidden');
+  document.getElementById('rules').classList.add('hidden');
+  document.getElementById('exam').classList.add('hidden');
+  document.getElementById('failed').classList.add('hidden');
+  document.getElementById('result').classList.add('hidden');
+  document.getElementById('alreadyCompleted').classList.add('hidden');
+  
+  document.getElementById('nameInput').value = '';
+  document.getElementById('passwordInput').value = '';
+  document.getElementById('registrationMessage').classList.add('hidden');
+  document.getElementById('userStatus').classList.add('hidden');
+  
+  testData = {
+    studentName: '',
+    pattern: '',
+    questions: [],
+    answers: [],
+    currentQuestion: 0,
+    examStarted: false,
+    pdfDownloaded: false
+  };
+}
+
+// Register or login user
+async function registerOrLogin() {
+  const name = document.getElementById('nameInput').value.trim();
+  const password = document.getElementById('passwordInput').value;
+  
+  if (!name || !password) {
+    showMessage('registrationMessage', 'Please enter both name and password', 'error');
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/auth`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, password })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      showMessage('registrationMessage', data.error || 'Authentication failed', 'error');
+      return;
+    }
+    
+    // Save user info
+    currentUser = {
+      name: name,
+      canRetake: data.user.canRetake
+    };
+    
+    // Check if user can take test
+    const canTakeResponse = await fetch(`${BACKEND_URL}/api/can-take-test/${encodeURIComponent(name)}`);
+    const canTakeData = await canTakeResponse.json();
+    
+    if (!canTakeResponse.ok) {
+      showMessage('registrationMessage', 'Error checking test status', 'error');
+      return;
+    }
+    
+    // Show appropriate interface
+    if (canTakeData.hasCompleted) {
+      // Test already completed
+      document.getElementById('registration').classList.add('hidden');
+      document.getElementById('alreadyCompleted').classList.remove('hidden');
+      return;
+    }
+    
+    if (!canTakeData.canRetake) {
+      showMessage('userStatus', 'You cannot retake the test at this time.', 'error');
+      return;
+    }
+    
+    // User can take test, proceed to pattern selection
+    showMessage('registrationMessage', `Welcome ${name}! You can now take the test.`, 'success');
+    document.getElementById('registration').classList.add('hidden');
+    document.getElementById('patternSelection').classList.remove('hidden');
+    
+  } catch (error) {
+    console.error('Error:', error);
+    showMessage('registrationMessage', 'Network error. Please try again.', 'error');
+  }
+}
+
+// Verify pattern and proceed to rules
+function verifyPattern() {
+  const pattern = document.getElementById('patternSelect').value;
+  
+  if (!pattern) {
+    showMessage('patternMessage', 'Please select an exam pattern', 'error');
+    return;
+  }
+  
+  testData.pattern = pattern;
+  testData.studentName = currentUser.name;
+  
+  document.getElementById('patternSelection').classList.add('hidden');
+  document.getElementById('rules').classList.remove('hidden');
+}
+
+// Start exam
+function startExam() {
+  document.getElementById('rules').classList.add('hidden');
+  document.getElementById('exam').classList.remove('hidden');
+  testData.examStarted = true;
+  testData.currentQuestion = 0;
+  testData.answers = [];
+  
+  // Initialize questions based on pattern
+  const allQuestions = QUESTION_BANK[testData.pattern];
+  testData.questions = shuffleArray([...allQuestions])
+    .map(q => ({...q, options: shuffleArray([...q.options])}));
+  
+  // Request fullscreen
+  document.documentElement.requestFullscreen().catch(() => {});
+  
+  // Setup security monitoring
+  setupSecurityMonitoring();
+  
+  renderQuestion();
+}
+
+// QUESTION BANK (same as before)
+const QUESTION_BANK = {
+  A: [
+    { q: "Which JavaScript declaration keyword binds an immutable identifier?", options: ["var", "let", "const", "static"], answer: "const" },
+    { q: "Which semantic HTML element represents a site-level link grouping?", options: ["section", "menu", "nav", "header"], answer: "nav" },
+    { q: "Which CSS property affects internal spacing of a box model?", options: ["margin", "gap", "padding", "outline"], answer: "padding" },
+    { q: "Which Canvas API function renders bitmap data onto the surface?", options: ["paintImage()", "renderImg()", "drawImage()", "putImage()"], answer: "drawImage()" },
+    { q: "Which JavaScript built-in function invokes a modal dialog?", options: ["console.log()", "prompt()", "alert()", "confirm()"], answer: "alert()" },
+    { q: "Which HTML attribute enforces user input before submission?", options: ["validate", "compulsory", "required", "checked"], answer: "required" },
+    { q: "Which CSS unit scales relative to viewport horizontal size?", options: ["vh", "em", "vw", "%"], answer: "vw" },
+    { q: "Which Canvas method resets pixels within a defined region?", options: ["resetRect()", "eraseRect()", "clearRect()", "wipeRect()"], answer: "clearRect()" },
+    { q: "Which semantic HTML element encapsulates primary document content?", options: ["body", "article", "main", "section"], answer: "main" },
+    { q: "Which HTML element inserts a thematic break?", options: ["br", "hr", "line", "rule"], answer: "hr" },
+    { q: "Which CSS property determines vertical layering priority?", options: ["depth", "overlay", "z-index", "stack"], answer: "z-index" },
+    { q: "Which HTML element embeds raster graphics?", options: ["picture", "media", "image", "img"], answer: "img" },
+    { q: "Which Canvas rendering property controls fill pigment?", options: ["fillColor", "fillStyle", "colorFill", "background"], answer: "fillStyle" },
+    { q: "Which JavaScript control keyword terminates iteration execution?", options: ["exit", "stop", "break", "halt"], answer: "break" },
+    { q: "Which CSS property modifies corner curvature?", options: ["curve", "border-edge", "border-radius", "outline-radius"], answer: "border-radius" },
+    { q: "Which HTML element constructs a bullet-based list?", options: ["li", "ul", "ol", "dl"], answer: "ul" },
+    { q: "Which JavaScript keyword initializes a scoped identifier?", options: ["define", "var", "let", "set"], answer: "let" },
+    { q: "Which Canvas method preserves the current context snapshot?", options: ["hold()", "cache()", "save()", "store()"], answer: "save()" },
+    { q: "Which CSS layout model aligns items horizontally by default?", options: ["grid", "inline", "flex", "block"], answer: "flex" },
+    { q: "Which character encoding declaration avoids symbol distortion?", options: ["ASCII", "UTF-18", "UTF-8", "UTF-16"], answer: "UTF-8" },
+    { q: "Which JavaScript structure maintains indexed collections?", options: ["object", "array", "map", "set"], answer: "array" },
+    { q: "Which CSS concept adapts layout across device sizes?", options: ["scaling", "responsiveness", "transitions", "alignment"], answer: "responsiveness" },
+    { q: "Which JavaScript method retrieves an element via unique identifier?", options: ["getelementById()", "getelementsByClassName()", "getElementById()", "getElementbyId()"], answer: "getElementById()" },
+    { q: "Which Canvas API function renders text glyphs?", options: ["drawText()", "fillText()", "writeText()", "textDraw()"], answer: "fillText()" },
+    { q: "Which JavaScript primitive represents intentional absence?", options: ["null", "undefined", "NaN", "false"], answer: "null" },
+    { q: "Which CSS property clips excess visual content?", options: ["hidden", "clip", "overflow", "mask"], answer: "overflow" },
+    { q: "Which document declaration activates compliance rendering?", options: ["‹html›", "‹meta›", "‹!DOCTYPE html›", "‹head›"], answer: "‹!DOCTYPE html›" },
+    { q: "Which HTML element triggers user interaction events?", options: ["input", "button", "submit", "click"], answer: "button" },
+    { q: "Which Canvas function restores the last stored context?", options: ["load()", "undo()", "restore()", "recall()"], answer: "restore()" },
+    { q: "Which CSS selector references a unique element?", options: [".class", "elementId", "#id", "*"], answer: "#id" }
+  ],
+  B: [
+    { q: "Which HTML element defines a clickable control?", options: ["action", "submit", "button", "input"], answer: "button" },
+    { q: "Which JavaScript operator inverses logical evaluation?", options: ["!=", "!", "!==", "not"], answer: "!" },
+    { q: "Which Canvas interface exposes rendering methods?", options: ["CanvasObject", "CanvasAPI", "CanvasRenderingContext2D", "GraphicsContext"], answer: "CanvasRenderingContext2D" },
+    { q: "Which CSS property horizontally aligns inline text?", options: ["align", "justify", "text-align", "text-position"], answer: "text-align" },
+    { q: "Which semantic HTML tag contains supplementary content?", options: ["aside", "section", "article", "nav"], answer: "aside" },
+    { q: "Which HTML element defines last page content?", options: ["end", "footer", "bottom", "end-content"], answer: "footer" },
+    { q: "Which CSS property repositions elements visually?", options: ["float", "transform", "margin", "display"], answer: "transform" },
+    { q: "Which CSS property modifies font texture intensity?", options: ["font-style", "text-weight", "font-weight", "letter-spacing"], answer: "font-weight" },
+    { q: "Which HTML attribute opens hyperlinks externally?", options: ["new", "target", "href", "rel"], answer: "target" },
+    { q: "Which JavaScript keyword declares executable blocks?", options: ["method", "function", "def", "exec"], answer: "function" },
+    { q: "Which CSS property controls outer spacing?", options: ["padding", "border", "margin", "gap"], answer: "margin" },
+    { q: "Which JavaScript method locates elements by ID?", options: ["getelementsByClassName()", "getElementById()", "getElementbyId()", "getelementbyId()"], answer: "getElementById()" },
+    { q: "Which Canvas property determines the line's stroke pigment?", options: ["strokeColor", "lineColor", "strokeStyle", "borderColor"], answer: "strokeStyle" },
+    { q: "Which Canvas method initializes a drawing path?", options: ["begin()", "startPath()", "beginPath()", "openPath()"], answer: "beginPath()" },
+    { q: "Which CSS unit inherits relative font sizing?", options: ["px", "rem", "em", "vh"], answer: "em" },
+    { q: "Which CSS property controls opacity levels?", options: ["visibility", "transparency", "opacity", "filter"], answer: "opacity" },
+    { q: "Which JavaScript keyword terminates function execution?", options: ["end", "stop", "return", "break"], answer: "return" },
+    { q: "Which Canvas method creates line segments?", options: ["line()", "drawLine()", "lineTo()", "strokeLine()"], answer: "lineTo()" },
+    { q: "Which CSS display value removes elements entirely?", options: ["hidden", "none", "invisible", "collapse"], answer: "none" },
+    { q: "Which HTML utility validates syntax correctness?", options: ["Browser", "Inspector", "Validator", "Compiler"], answer: "Validator" },
+    { q: "Which JavaScript data type stores characters?", options: ["char", "text", "string", "varchar"], answer: "string" },
+    { q: "Which CSS property aligns items along cross-axis?", options: ["justify-content", "align-content", "align-items", "place-items"], answer: "align-items" },
+    { q: "Which HTML attribute displays hint text in inputs?", options: ["label", "hint", "placeholder", "value"], answer: "placeholder" },
+    { q: "Which HTML element produces numbered lists?", options: ["ul", "dl", "li", "ol"], answer: "ol" },
+    { q: "Which Canvas property defines stroke thickness?", options: ["borderWidth", "strokeSize", "lineWidth", "penWidth"], answer: "lineWidth" },
+    { q: "Which CSS property defines layout reference model?", options: ["position", "display", "float", "align"], answer: "position" },
+    { q: "Which Canvas method reverts saved drawing state?", options: ["undo()", "restore()", "reload()", "reverse()"], answer: "restore()" },
+    { q: "Which HTML element groups form controls?", options: ["group", "fieldset", "formset", "legend"], answer: "fieldset" },
+    { q: "Which CSS rule enables animated transitions?", options: ["animation", "transition", "transform", "interpolate"], answer: "transition" },
+    { q: "Which CSS property alters cursor appearance?", options: ["pointer", "arrow", "cursor", "mouse"], answer: "cursor" }
+  ],
+  C: [
+    { q: "Which HTML element provides a drawable region?", options: ["draw", "paint", "canvas", "surface"], answer: "canvas" },
+    { q: "Which HTML element encapsulates metadata?", options: ["body", "meta", "head", "title"], answer: "head" },
+    { q: "Which Canvas method seals the current path?", options: ["endPath()", "closePath()", "finishPath()", "stopPath()"], answer: "closePath()" },
+    { q: "Which CSS property assigns background pigment?", options: ["background-style", "background-color", "color", "fill"], answer: "background-color" },
+    { q: "Which CSS property defines typeface grouping?", options: ["font", "font-style", "font-family", "typeface"], answer: "font-family" },
+    { q: "Which Canvas method erases a defined pixel region?", options: ["deleteRect()", "wipeRect()", "clearRect()", "removeRect()"], answer: "clearRect()" },
+    { q: "Which Canvas method draws semi-circles and circles?", options: ["curve()", "arc()", "circle()", "round()"], answer: "arc()" },
+    { q: "Which CSS property controls animation timing length?", options: ["animation-speed", "animation-duration", "transition-time", "animation-delay"], answer: "animation-duration" },
+    { q: "Which HTML element represents the highest heading?", options: ["h6", "heading", "h1", "header"], answer: "h1" },
+    { q: "Which JavaScript operator checks strict inequality?", options: ["!=", "!!=", "!==", "!==="], answer: "!==" },
+    { q: "Which Canvas method stores rendering state?", options: ["save()", "cache()", "hold()", "keep()"], answer: "save()" },
+    { q: "Which HTML element generates selection menus?", options: ["option", "dropdown", "select", "menu"], answer: "select" },
+    { q: "Which HTML element embeds external pages?", options: ["embed", "iframe", "frame", "object"], answer: "iframe" },
+    { q: "Which Canvas method draws a line to coordinates?", options: ["drawTo()", "moveTo()", "lineTo()", "pathTo()"], answer: "lineTo()" },
+    { q: "Which Canvas method renders textual output?", options: ["text()", "fillText()", "printText()", "drawFont()"], answer: "fillText()" },
+    { q: "Which CSS property hides content but preserves layout space?", options: ["display", "opacity", "visibility", "hidden"], answer: "visibility" },
+    { q: "Which HTML attribute disables input controls?", options: ["readonly", "inactive", "disabled", "locked"], answer: "disabled" },
+    { q: "Which JavaScript keyword defines immutable variables?", options: ["let", "var", "const", "static"], answer: "const" },
+    { q: "Which Canvas property controls alpha transparency?", options: ["opacity", "alpha", "globalAlpha", "transparency"], answer: "globalAlpha" },
+    { q: "Which CSS property spaces flex children evenly?", options: ["align-items", "gap-content", "justify-content", "place-content"], answer: "justify-content" },
+    { q: "Which HTML element directly creates user data entry controls?", options: ["form", "textarea", "input", "field"], answer: "input" },
+    { q: "Which JavaScript function converts strings to numbers?", options: ["Number()", "parseInt()", "toNum()", "convert(num)"], answer: "parseInt()" },
+    { q: "Which CSS property alters text casing?", options: ["font-style", "text-transform", "letter-spacing", "word-break"], answer: "text-transform" },
+    { q: "Which HTML attribute controls image loading behavior?", options: ["async", "lazy", "loading", "defer"], answer: "loading" },
+    { q: "Which HTML attribute assign initial cursor focus with scripting for an input?", options: ["focus", "selected", "autofocus", "active"], answer: "autofocus" },
+    { q: "Which CSS property positions background imagery?", options: ["background-align", "background-origin", "background-position", "background-place"], answer: "background-position" },
+    { q: "Which JavaScript operator checks loose equality?", options: ["===", "=", "==", "!=="], answer: "==" },
+    { q: "Which DOM method retrieves an element by ID?", options: ["getelementbyId()", "getElementById()", "getElementbyId()", "getelementById()"], answer: "getElementById()" },
+    { q: "Which HTML element represents keyboard input?", options: ["kbdIn", "keyboard-input", "kbd", "input-key"], answer: "kbd" },
+    { q: "Which CSS property fits images within containers?", options: ["object-position", "image-fit", "object-fit", "background-size"], answer: "object-fit" }
+  ]
+};
+
+// Shuffle array
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+// Render question
+function renderQuestion() {
+  const q = testData.questions[testData.currentQuestion];
+  const questionNumber = testData.currentQuestion + 1;
+  const totalQuestions = testData.questions.length;
+  
+  document.getElementById('questionCounter').textContent = `Question ${questionNumber}/${totalQuestions}`;
+  
+  document.getElementById('questionBox').innerHTML = `
+    <div class="bg-gray-50 p-4 rounded-lg mb-4">
+      <p class="font-semibold text-lg">${q.q}</p>
+    </div>
+    <div class="space-y-3">
+      ${q.options.map((option, idx) => `
+        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-emerald-50 transition">
+          <input type="radio" name="ans" value="${option}" class="mr-3">
+          <span class="flex-1">${option}</span>
+        </label>
+      `).join('')}
+    </div>
+  `;
+}
+
+// Next question
+function nextQuestion() {
+  const selected = document.querySelector('input[name="ans"]:checked');
+  
+  if (!selected) {
+    alert('Please select an answer before proceeding');
+    return;
+  }
+  
+  testData.answers.push(selected.value);
+  testData.currentQuestion++;
+  
+  if (testData.currentQuestion >= testData.questions.length) {
+    submitTestResults();
+  } else {
+    renderQuestion();
+  }
+}
+
+// Submit test results to backend
+async function submitTestResults() {
+  // Calculate score
+  const score = testData.answers.reduce((total, answer, idx) => {
+    return total + (answer === testData.questions[idx].answer ? 1 : 0);
+  }, 0);
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/submit-test`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        studentName: testData.studentName,
+        pattern: testData.pattern,
+        score: score,
+        total: testData.questions.length,
+        answers: testData.answers,
+        pdfDownloaded: false
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      // Handle error - maybe test already submitted
+      showTestResult(score, false);
+    } else {
+      showTestResult(score, true);
+    }
+    
+  } catch (error) {
+    console.error('Error submitting results:', error);
+    showTestResult(score, false);
+  }
+}
+
+// Show test result
+function showTestResult(score, success) {
+  testData.examStarted = false;
+  
+  // Exit fullscreen
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(() => {});
+  }
+  
+  // Remove security event listeners
+  removeSecurityMonitoring();
+  
+  if (!success) {
+    // Test submission failed - show already completed
+    document.getElementById('exam').classList.add('hidden');
+    document.getElementById('alreadyCompleted').classList.remove('hidden');
+    return;
+  }
+  
+  document.getElementById('exam').classList.add('hidden');
+  document.getElementById('result').classList.remove('hidden');
+  
+  const percentage = ((score / testData.questions.length) * 100).toFixed(1);
+  const resultText = document.getElementById('resultText');
+  
+  resultText.innerHTML = `
+    <div class="mb-2">${testData.studentName}</div>
+    <div class="text-3xl font-bold text-emerald-600">Score: ${score}/${testData.questions.length}</div>
+    <div class="text-lg text-gray-600">Percentage: ${percentage}%</div>
+  `;
+}
+
+// Security monitoring
+function setupSecurityMonitoring() {
+  // Add event listeners for security
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.addEventListener('blur', handleBlur);
+  document.addEventListener('fullscreenchange', handleFullscreenChange);
+  document.addEventListener('keydown', handleKeyDown);
+  
+  // Prevent right-click
+  document.addEventListener('contextmenu', handleContextMenu);
+}
+
+function removeSecurityMonitoring() {
+  // Remove event listeners
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
+  window.removeEventListener('blur', handleBlur);
+  document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  document.removeEventListener('keydown', handleKeyDown);
+  document.removeEventListener('contextmenu', handleContextMenu);
+}
+
+function handleVisibilityChange() {
+  if (testData.examStarted && document.hidden) {
+    failTest();
+  }
+}
+
+function handleBlur() {
+  if (testData.examStarted) {
+    failTest();
+  }
+}
+
+function handleFullscreenChange() {
+  if (testData.examStarted && !document.fullscreenElement) {
+    failTest();
+  }
+}
+
+function handleKeyDown(e) {
+  if (testData.examStarted) {
+    // Prevent common screenshot and copy shortcuts
+    if ((e.ctrlKey || e.metaKey) && 
+        (e.key === 'c' || e.key === 'C' || 
+         e.key === 'p' || e.key === 'P' ||
+         e.key === 's' || e.key === 'S' ||
+         e.key === 'PrintScreen')) {
+      e.preventDefault();
+      failTest();
+    }
+    
+    // Prevent F12, Ctrl+Shift+I, etc.
+    if (e.key === 'F12' || 
+        (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+        (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+        (e.ctrlKey && e.shiftKey && e.key === 'C')) {
+      e.preventDefault();
+      failTest();
+    }
+  }
+}
+
+function handleContextMenu(e) {
+  if (testData.examStarted) {
+    e.preventDefault();
+    failTest();
+  }
+}
+
+// Fail test
+function failTest() {
+  if (!testData.examStarted) return;
+  
+  testData.examStarted = false;
+  
+  // Exit fullscreen
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(() => {});
+  }
+  
+  // Remove security monitoring
+  removeSecurityMonitoring();
+  
+  // Show failed screen
+  document.getElementById('exam').classList.add('hidden');
+  document.getElementById('failed').classList.remove('hidden');
+}
+
+// Second chance
+async function secondChance() {
+  const password = document.getElementById('secondPass').value;
+  
+  if (!password) {
+    alert('Please enter the second chance password');
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/verify-second-chance`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        password: password,
+        studentName: currentUser.name
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      alert(data.error || 'Invalid second chance password');
+      return;
+    }
+    
+    // Success - reset and start test
+    alert('Second chance granted! You can now retake the test.');
+    location.reload();
+    
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Network error. Please try again.');
+  }
+}
+
+// Download PDF
+async function downloadPDF() {
+  if (testData.pdfDownloaded) {
+    showMessage('pdfStatus', 'PDF already downloaded. You cannot download it again.', 'error');
+    return;
+  }
+  
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+  
+  let y = 10;
+  const pageHeight = pdf.internal.pageSize.height;
+  const margin = 10;
+  
+  const score = testData.answers.reduce((total, answer, idx) => {
+    return total + (answer === testData.questions[idx].answer ? 1 : 0);
+  }, 0);
+  
+  function checkPage() {
+    if (y > pageHeight - 20) {
+      pdf.addPage();
+      y = margin;
+    }
+  }
+  
+  // Header
+  pdf.setFontSize(20);
+  pdf.setTextColor(6, 95, 70); // Emerald color
+  pdf.text('XAMPLORE EXAM CERTIFICATE', margin, y);
+  y += 15;
+  
+  pdf.setDrawColor(6, 95, 70);
+  pdf.line(margin, y, 200 - margin, y);
+  y += 10;
+  
+  // Student Info
+  pdf.setFontSize(12);
+  pdf.setTextColor(0, 0, 0);
+  pdf.text(`Student Name: ${testData.studentName}`, margin, y); y += 8;
+  pdf.text(`Exam Pattern: ${testData.pattern}`, margin, y); y += 8;
+  pdf.text(`Date: ${new Date().toLocaleDateString()}`, margin, y); y += 8;
+  
+  // Score
+  pdf.setFontSize(16);
+  pdf.setTextColor(6, 95, 70);
+  pdf.text(`SCORE: ${score}/${testData.questions.length}`, margin, y); y += 12;
+  
+  const percentage = ((score / testData.questions.length) * 100).toFixed(1);
+  pdf.setFontSize(12);
+  pdf.setTextColor(0, 0, 0);
+  pdf.text(`Percentage: ${percentage}%`, margin, y); y += 15;
+  
+  // Questions and Answers
+  pdf.setFontSize(14);
+  pdf.setTextColor(6, 95, 70);
+  pdf.text('Exam Details:', margin, y); y += 10;
+  
+  pdf.setFontSize(10);
+  pdf.setTextColor(0, 0, 0);
+  
+  testData.questions.forEach((q, i) => {
+    checkPage();
+    
+    pdf.setFont(undefined, 'bold');
+    pdf.text(`Q${i + 1}: ${q.q}`, margin, y);
+    y += 6;
+    
+    checkPage();
+    pdf.setFont(undefined, 'normal');
+    
+    // Show selected answer
+    const userAnswer = testData.answers[i] || 'Not answered';
+    const isCorrect = userAnswer === q.answer;
+    
+    pdf.setTextColor(isCorrect ? 0, 128, 0 : 255, 0, 0);
+    pdf.text(`Your Answer: ${userAnswer}`, margin + 4, y);
+    y += 6;
+    
+    checkPage();
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(`Correct Answer: ${q.answer}`, margin + 4, y);
+    y += 8;
+  });
+  
+  // Footer
+  checkPage();
+  y += 10;
+  pdf.setDrawColor(6, 95, 70);
+  pdf.line(margin, y, 200 - margin, y);
+  y += 5;
+  
+  pdf.setFontSize(8);
+  pdf.setTextColor(100, 100, 100);
+  pdf.text('Official Exam Certificate - Xamplore v2.0', margin, y);
+  pdf.text('This is a digitally signed certificate. Do not retake exam.', margin, y + 4);
+  
+  // Save PDF
+  const fileName = `Xamplore_${testData.studentName.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
+  pdf.save(fileName);
+  
+  // Mark as downloaded and update backend
+  testData.pdfDownloaded = true;
+  
+  try {
+    await fetch(`${BACKEND_URL}/api/submit-test`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        studentName: testData.studentName,
+        pattern: testData.pattern,
+        score: score,
+        total: testData.questions.length,
+        answers: testData.answers,
+        pdfDownloaded: true
+      })
+    });
+    
+    // Disable download button
+    const downloadBtn = document.getElementById('downloadBtn');
+    downloadBtn.disabled = true;
+    downloadBtn.innerHTML = '<i data-lucide="check" class="inline w-4 h-4 mr-2"></i> PDF Downloaded';
+    downloadBtn.className = 'w-full bg-gray-400 text-white p-2 rounded font-semibold cursor-not-allowed';
+    
+    showMessage('pdfStatus', 'PDF downloaded successfully. You cannot download it again or retake the test.', 'success');
+    
+  } catch (error) {
+    console.error('Error updating download status:', error);
+    showMessage('pdfStatus', 'PDF downloaded but could not update server status.', 'warning');
+  }
+}
+
+// Helper function to show messages
+function showMessage(elementId, message, type) {
+  const element = document.getElementById(elementId);
+  element.textContent = message;
+  element.className = `text-sm p-2 rounded ${type === 'error' ? 'bg-red-100 text-red-700' : 
+    type === 'success' ? 'bg-emerald-100 text-emerald-700' : 
+    'bg-yellow-100 text-yellow-700'} ${element.classList.contains('hidden') ? '' : ''}`;
+  element.classList.remove('hidden');
+}
+
+</script>
+
+</body>
+</html>
