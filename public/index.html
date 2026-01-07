@@ -18,17 +18,78 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
 
 <style>
-* { user-select:none; -webkit-user-select:none; }
-body { font-family:'Poppins',sans-serif; overflow-x: hidden; }
-.brand { font-family:'Montserrat',sans-serif; }
-input[type="password"] { user-select: none; -webkit-user-select: none; }
+* { 
+  user-select: none; 
+  -webkit-user-select: none; 
+}
+body { 
+  font-family: 'Poppins', sans-serif; 
+  overflow-x: hidden; 
+}
+.brand { 
+  font-family: 'Montserrat', sans-serif; 
+}
+input[type="password"] { 
+  user-select: none; 
+  -webkit-user-select: none; 
+}
+
+/* FIX: Allow selection for radio buttons and labels */
+input[type="radio"], 
+label[for], 
+.radio-label,
+.option-label {
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+  cursor: pointer !important;
+}
+
+/* FIX: Make sure labels are clickable */
+label {
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* FIX: Ensure radio buttons work */
+input[type="radio"] {
+  pointer-events: auto;
+}
+
+/* FIX: Mobile menu button */
+.md\\:hidden button {
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* FIX: Remove selection restriction from specific elements */
+#questionBox * {
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+}
 </style>
 </head>
 
 <body class="bg-white text-gray-800 min-h-screen flex flex-col">
 
 <!-- WELCOME POPUP -->
-
+<div id="welcomePopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+    <button onclick="closeWelcomePopup()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+      <i data-lucide="x"></i>
+    </button>
+    <div class="flex items-center gap-2 mb-4">
+      <i data-lucide="graduation-cap" class="text-emerald-600"></i>
+      <h3 class="text-xl font-bold text-emerald-600">Welcome to Xamplore!</h3>
+    </div>
+    <p class="text-gray-600 mb-4">
+      Ready to test your knowledge? Head over to the <span class="font-semibold text-emerald-600">Test</span> section in the menu to take secure exams.
+    </p>
+    <div class="text-sm text-gray-500">
+      <i data-lucide="info" class="inline w-4 h-4 mr-1"></i>
+      Platform Version: <span class="font-bold">Xam2.0</span>
+    </div>
+  </div>
+</div>
 
 <!-- NAV -->
 <nav class="border-b shadow-sm sticky top-0 bg-white z-40">
@@ -39,22 +100,22 @@ input[type="password"] { user-select: none; -webkit-user-select: none; }
     </div>
 
     <div class="hidden md:flex gap-8 font-semibold">
-      <button onclick="showSection('home')">Home</button>
-      <button onclick="showSection('test')">Test</button>
-      <button onclick="showSection('hangman')">Hangman</button>
-      <button onclick="showSection('about')">About</button>
+      <button onclick="showSection('home')" class="hover:text-emerald-600 transition">Home</button>
+      <button onclick="showSection('test')" class="hover:text-emerald-600 transition">Test</button>
+      <button onclick="showSection('hangman')" class="hover:text-emerald-600 transition">Hangman</button>
+      <button onclick="showSection('about')" class="hover:text-emerald-600 transition">About</button>
     </div>
 
-    <button class="md:hidden" onclick="toggleMenu()">
-      <i data-lucide="menu"></i>
+    <button id="mobileMenuButton" class="md:hidden cursor-pointer" onclick="toggleMenu()">
+      <i data-lucide="menu" id="menuIcon"></i>
     </button>
   </div>
 
-  <div id="mobileMenu" class="hidden md:hidden px-6 pb-4 space-y-3 font-semibold">
-    <button onclick="showSection('home')" class="block">Home</button>
-    <button onclick="showSection('test')" class="block">Test</button>
-    <button onclick="showSection('hangman')" class="block">Hangman</button>
-    <button onclick="showSection('about')" class="block">About</button>
+  <div id="mobileMenu" class="hidden md:hidden px-6 pb-4 space-y-3 font-semibold bg-white border-t">
+    <button onclick="showSection('home')" class="block w-full text-left py-2 hover:text-emerald-600 transition">Home</button>
+    <button onclick="showSection('test')" class="block w-full text-left py-2 hover:text-emerald-600 transition">Test</button>
+    <button onclick="showSection('hangman')" class="block w-full text-left py-2 hover:text-emerald-600 transition">Hangman</button>
+    <button onclick="showSection('about')" class="block w-full text-left py-2 hover:text-emerald-600 transition">About</button>
   </div>
 </nav>
 
@@ -117,7 +178,7 @@ input[type="password"] { user-select: none; -webkit-user-select: none; }
       
       <div id="registrationMessage" class="text-sm mb-3 hidden"></div>
       
-      <button onclick="registerOrLogin()" class="w-full bg-emerald-600 text-white p-2 rounded font-semibold">
+      <button onclick="registerOrLogin()" class="w-full bg-emerald-600 text-white p-2 rounded font-semibold hover:bg-emerald-700 transition">
         Register / Login
       </button>
       
@@ -136,7 +197,7 @@ input[type="password"] { user-select: none; -webkit-user-select: none; }
       
       <div id="patternMessage" class="text-sm mb-3 hidden"></div>
       
-      <button onclick="verifyPattern()" class="w-full bg-emerald-600 text-white p-2 rounded">
+      <button onclick="verifyPattern()" class="w-full bg-emerald-600 text-white p-2 rounded hover:bg-emerald-700 transition">
         Start Exam Rules
       </button>
     </div>
@@ -157,7 +218,7 @@ input[type="password"] { user-select: none; -webkit-user-select: none; }
           <strong>Important:</strong> You can only take this test once. Make sure you're ready!
         </p>
       </div>
-      <button onclick="startExam()" class="mt-2 w-full bg-emerald-600 text-white p-2 rounded">
+      <button onclick="startExam()" class="mt-2 w-full bg-emerald-600 text-white p-2 rounded hover:bg-emerald-700 transition">
         I Agree & Start Exam
       </button>
     </div>
@@ -169,7 +230,7 @@ input[type="password"] { user-select: none; -webkit-user-select: none; }
         <span class="text-sm bg-red-100 text-red-700 px-2 py-1 rounded" id="securityStatus">Security Active</span>
       </div>
       <div id="questionBox" class="mb-4"></div>
-      <button onclick="nextQuestion()" class="mt-4 w-full bg-emerald-600 text-white p-2 rounded">
+      <button onclick="nextQuestion()" class="mt-4 w-full bg-emerald-600 text-white p-2 rounded hover:bg-emerald-700 transition">
         Next Question
       </button>
     </div>
@@ -202,7 +263,7 @@ input[type="password"] { user-select: none; -webkit-user-select: none; }
         placeholder="Second Chance Authorization Code"
       />
       
-      <button onclick="secondChance()" class="mt-2 w-full bg-emerald-600 text-white p-2 rounded">
+      <button onclick="secondChance()" class="mt-2 w-full bg-emerald-600 text-white p-2 rounded hover:bg-emerald-700 transition">
         Authorize Retake
       </button>
     </div>
@@ -218,12 +279,12 @@ input[type="password"] { user-select: none; -webkit-user-select: none; }
       <div id="pdfStatus" class="mt-4 p-3 rounded hidden"></div>
       
       <div class="mt-6 space-y-3">
-        <button onclick="downloadPDF()" id="downloadBtn" class="w-full bg-emerald-600 text-white p-2 rounded font-semibold">
+        <button onclick="downloadPDF()" id="downloadBtn" class="w-full bg-emerald-600 text-white p-2 rounded font-semibold hover:bg-emerald-700 transition">
           <i data-lucide="download" class="inline w-4 h-4 mr-2"></i>
           Download PDF Certificate
         </button>
         
-        <button onclick="showSection('home')" class="w-full bg-gray-200 text-gray-700 p-2 rounded">
+        <button onclick="showSection('home')" class="w-full bg-gray-200 text-gray-700 p-2 rounded hover:bg-gray-300 transition">
           Return to Home
         </button>
       </div>
@@ -239,7 +300,7 @@ input[type="password"] { user-select: none; -webkit-user-select: none; }
         You have already completed the test and downloaded the certificate. 
         You cannot retake the test or download the PDF again.
       </p>
-      <button onclick="showSection('home')" class="w-full bg-emerald-600 text-white p-2 rounded">
+      <button onclick="showSection('home')" class="w-full bg-emerald-600 text-white p-2 rounded hover:bg-emerald-700 transition">
         Return to Home
       </button>
     </div>
@@ -390,6 +451,7 @@ input[type="password"] { user-select: none; -webkit-user-select: none; }
 </footer>
 
 <script>
+// Initialize Lucide icons
 lucide.createIcons();
 
 // Show welcome popup on load
@@ -404,14 +466,35 @@ function closeWelcomePopup() {
 }
 
 /* NAV */
-function toggleMenu(){ 
-  document.getElementById('mobileMenu').classList.toggle("hidden"); 
+function toggleMenu() { 
+  const mobileMenu = document.getElementById('mobileMenu');
+  const menuIcon = document.getElementById('menuIcon');
+  
+  mobileMenu.classList.toggle("hidden");
+  
+  // Change icon based on menu state
+  if (mobileMenu.classList.contains("hidden")) {
+    menuIcon.setAttribute("data-lucide", "menu");
+  } else {
+    menuIcon.setAttribute("data-lucide", "x");
+  }
+  
+  // Refresh icon
+  lucide.createIcons();
 }
 
-function showSection(id){
-  ["home","test","hangman","about"].forEach(s=>document.getElementById(s).classList.add("hidden"));
+function showSection(id) {
+  ["home","test","hangman","about"].forEach(s => {
+    document.getElementById(s).classList.add("hidden");
+  });
   document.getElementById(id).classList.remove("hidden");
+  
+  // Close mobile menu if open
   document.getElementById('mobileMenu').classList.add("hidden");
+  const menuIcon = document.getElementById('menuIcon');
+  menuIcon.setAttribute("data-lucide", "menu");
+  lucide.createIcons();
+  
   if(id === 'hangman') {
     setTimeout(initializeHangman, 100);
   }
@@ -421,15 +504,7 @@ function showSection(id){
 }
 
 /* BACKEND CONFIGURATION */
-/* BACKEND CONFIGURATION - AUTO DETECT */
-const BACKEND_URL = (function() {
-  // If developing locally
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return 'http://localhost:3000';
-  }
-  // For production, use the same origin (Vercel will handle routing)
-  return window.location.origin;
-})(); // Replace with your Vercel URL
+const BACKEND_URL = window.location.origin;
 
 /* HANGMAN GAME DATA */
 const HANGMAN_WORDS = [
@@ -705,7 +780,7 @@ function startExam() {
   renderQuestion();
 }
 
-// QUESTION BANK (same as before)
+// QUESTION BANK
 const QUESTION_BANK = {
   A: [
     { q: "Which JavaScript declaration keyword binds an immutable identifier?", options: ["var", "let", "const", "static"], answer: "const" },
@@ -814,7 +889,7 @@ function shuffleArray(array) {
   return array;
 }
 
-// Render question
+// Render question - FIXED VERSION
 function renderQuestion() {
   const q = testData.questions[testData.currentQuestion];
   const questionNumber = testData.currentQuestion + 1;
@@ -822,24 +897,59 @@ function renderQuestion() {
   
   document.getElementById('questionCounter').textContent = `Question ${questionNumber}/${totalQuestions}`;
   
+  // Create a unique ID for each radio button to ensure they're clickable
+  const questionId = `question-${testData.currentQuestion}`;
+  
   document.getElementById('questionBox').innerHTML = `
     <div class="bg-gray-50 p-4 rounded-lg mb-4">
-      <p class="font-semibold text-lg">${q.q}</p>
+      <p class="font-semibold text-lg select-text">${q.q}</p>
     </div>
-    <div class="space-y-3">
-      ${q.options.map((option, idx) => `
-        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-emerald-50 transition">
-          <input type="radio" name="ans" value="${option}" class="mr-3">
-          <span class="flex-1">${option}</span>
-        </label>
-      `).join('')}
+    <div class="space-y-3" id="options-container">
+      ${q.options.map((option, idx) => {
+        const optionId = `${questionId}-option-${idx}`;
+        return `
+          <div class="option-item">
+            <input 
+              type="radio" 
+              id="${optionId}" 
+              name="${questionId}" 
+              value="${option}" 
+              class="mr-3 radio-option"
+              onclick="handleOptionClick(this)"
+            >
+            <label 
+              for="${optionId}" 
+              class="flex-1 p-3 border rounded-lg cursor-pointer hover:bg-emerald-50 transition option-label select-text"
+            >
+              ${option}
+            </label>
+          </div>
+        `;
+      }).join('')}
     </div>
   `;
 }
 
+// Handle option click
+function handleOptionClick(radio) {
+  // Uncheck all other radios in this question
+  const name = radio.getAttribute('name');
+  const allRadios = document.querySelectorAll(`input[name="${name}"]`);
+  allRadios.forEach(r => {
+    r.checked = false;
+    r.parentElement.querySelector('label').classList.remove('bg-emerald-100', 'border-emerald-300');
+  });
+  
+  // Check the clicked one
+  radio.checked = true;
+  radio.parentElement.querySelector('label').classList.add('bg-emerald-100', 'border-emerald-300');
+}
+
 // Next question
 function nextQuestion() {
-  const selected = document.querySelector('input[name="ans"]:checked');
+  // Find the selected radio button
+  const questionId = `question-${testData.currentQuestion}`;
+  const selected = document.querySelector(`input[name="${questionId}"]:checked`);
   
   if (!selected) {
     alert('Please select an answer before proceeding');
@@ -1122,7 +1232,7 @@ async function downloadPDF() {
     const userAnswer = testData.answers[i] || 'Not answered';
     const isCorrect = userAnswer === q.answer;
     
-    pdf.setTextColor(isCorrect ? 0, 128, 0 : 255, 0, 0);
+    pdf.setTextColor(isCorrect ? 0 : 255, isCorrect ? 128 : 0, 0);
     pdf.text(`Your Answer: ${userAnswer}`, margin + 4, y);
     y += 6;
     
