@@ -1,1 +1,4662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Xamplore – Secure Exam Platform</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
 
+<!-- Tailwind Importing-->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- jsPDF(For PDF Generation after test(Needs testing))-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- Lucide for Icons-->
+<script src="https://unpkg.com/lucide@latest"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
+
+<style>
+* { user-select:none; -webkit-user-select:none; }
+body { font-family:'Poppins',sans-serif; overflow-x: hidden; }
+.brand { font-family:'Montserrat',sans-serif; }
+input[type="password"] { user-select: none; -webkit-user-select: none; }
+.timer-running { animation: pulse 2s infinite; }
+@keyframes pulse {
+  0%, 100% { background-color: #fef3c7; }
+  50% { background-color: #fde68a; }
+}
+.exam-closed { background-color: #fee2e2; border-color: #fca5a5; }
+.exam-open { background-color: #d1fae5; border-color: #34d399; }
+.exam-waiting { background-color: #fef3c7; border-color: #fbbf24; }
+
+  /* Add to your existing style section */
+/* Animated Gradient Circle */
+@keyframes gradient-pulse {
+  0%, 100% {
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 40%, transparent 70%);
+    transform: scale(1);
+  }
+  50% {
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.15) 40%, transparent 70%);
+    transform: scale(1.05);
+  }
+}
+
+@keyframes gradient-rotate {
+  0% {
+    background: linear-gradient(45deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1), rgba(16, 185, 129, 0.15));
+  }
+  25% {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1), rgba(16, 185, 129, 0.15));
+  }
+  50% {
+    background: linear-gradient(225deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.15), rgba(16, 185, 129, 0.2));
+  }
+  75% {
+    background: linear-gradient(315deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1), rgba(16, 185, 129, 0.15));
+  }
+  100% {
+    background: linear-gradient(45deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.1), rgba(16, 185, 129, 0.15));
+  }
+}
+
+.animate-gradient-pulse {
+  animation: gradient-pulse 8s ease-in-out infinite;
+}
+
+/* Alternative option - rotating gradient (choose one) */
+.animate-gradient-rotate {
+  animation: gradient-rotate 20s linear infinite;
+}
+  /* Add to your existing style section */
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+ /* Mobile Responsive Fixes for Courses Section - UPDATED */
+@media (max-width: 768px) {
+  /* Fix the main courses container */
+  #courses .max-w-7xl {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Fix expanded course sections - UPDATED */
+  #languageSections .bg-white.p-6 {
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 1rem !important;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0.5rem;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  /* Ensure grid uses single column on mobile */
+  #languageSections .grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  
+  /* Fix course title and text */
+  #languageSections h4 {
+    font-size: 0.95rem;
+    line-height: 1.3;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+  }
+  
+  #languageSections .text-sm {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+  
+  /* Make course cards fit on mobile */
+  #languageSections .bg-white.rounded-xl {
+    max-width: 100%;
+    overflow: hidden;
+  }
+  
+  /* Fix button and link sizes */
+  #languageSections a {
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  
+  /* Fix search/filter section */
+  #courses .bg-white.p-6 {
+    padding: 1rem !important;
+  }
+  
+  /* Fix featured websites section */
+  #courses .grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4 {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* Additional utility classes for better text handling */
+.truncate-2-lines {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-height: 1.3;
+}
+
+.truncate-3-lines {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-height: 1.4;
+}
+.search-highlight {
+  background-color: #fef3c7;
+  padding: 0 2px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+  /* Form styling */
+#contributeForm input:focus, 
+#contributeForm select:focus, 
+#contributeForm textarea:focus {
+  outline: none;
+  ring: 2px;
+}
+
+#contributeForm .form-group {
+  transition: all 0.3s ease;
+}
+
+#submitButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Smooth scroll for form */
+#contributeForm {
+  scroll-margin-top: 20px;
+}
+
+  /* Form button enhancements */
+#contributeForm button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 48px; /* Better touch target for mobile */
+}
+
+/* Hover effects for desktop */
+@media (min-width: 768px) {
+  #contributeForm button:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* Active state for mobile */
+#contributeForm button:active {
+  transform: translateY(1px);
+}
+
+/* Loading state animation */
+@keyframes button-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+#submitButton:disabled {
+  animation: button-pulse 1.5s infinite;
+}
+
+/* Responsive button sizing */
+@media (max-width: 640px) {
+  #contributeForm button {
+    font-size: 0.875rem;
+    padding: 0.75rem 1rem;
+    min-height: 44px;
+  }
+  
+  .xs\\:flex-row {
+    flex-direction: row;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 475px) {
+  #contributeForm button {
+    font-size: 0.8125rem;
+    padding: 0.625rem 0.875rem;
+  }
+  
+  .xs\\:flex-row {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .xs\\:w-auto {
+    width: 100%;
+  }
+  
+  #contributeForm .xs\\:flex-row button {
+    width: 100%;
+  }
+}
+
+/* Tablet screens */
+@media (min-width: 641px) and (max-width: 1024px) {
+  #contributeForm button {
+    font-size: 0.875rem;
+    padding: 0.875rem 1.25rem;
+  }
+}
+
+/* Make buttons look more premium */
+#contributeForm button {
+  border-radius: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+#submitButton {
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1), 0 2px 4px -1px rgba(16, 185, 129, 0.06);
+}
+
+#submitButton:hover {
+  box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.1), 0 4px 6px -2px rgba(16, 185, 129, 0.05);
+}
+
+#contributeForm button[onclick="resetContributeForm()"] {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+#contributeForm button[onclick="resetContributeForm()"]:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-color: #9CA3AF;
+}
+
+/* Responsive QR code layout */
+@media (max-width: 768px) {
+    #questionBox .flex-col {
+        flex-direction: column;
+    }
+    
+    #questionBox .md\\:w-1\\/3 {
+        width: 100% !important;
+    }
+    
+    #questionBox img {
+        max-width: 200px;
+        max-height: 200px;
+    }
+}
+
+/* Ensure QR code stays within bounds */
+#questionBox img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Better radio button styling */
+#questionBox input[type="radio"] {
+    accent-color: #059669;
+}
+
+/* Hover effect for options */
+#questionBox label:hover {
+    background-color: #f9fafb;
+    border-color: #d1fae5;
+}
+</style>
+</head>
+
+<body class="bg-white text-gray-800 min-h-screen flex flex-col">
+
+<!-- Updated Welcome Popup - Smaller with better close button -->
+<!-- Welcome Popup with slightly bigger full-height image -->
+<div id="welcomePopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full overflow-hidden">
+    <div class="flex items-stretch min-h-64">
+      <!-- Text Content -->
+      <div class="p-5 md:p-6 flex-1 flex flex-col justify-center">
+        <div class="flex items-center gap-2 mb-4">
+          <i data-lucide="graduation-cap" class="text-emerald-600 w-6 h-6"></i>
+          <h3 class="text-lg font-bold text-emerald-600">Welcome to Xamplore!</h3>
+        </div>
+        
+        <div class="mb-4">
+          <p class="font-semibold text-gray-800 text-base mb-2">Hi! I'm <span class="text-emerald-600">Xavi the Fox</span></p>
+          <p class="text-sm text-gray-600 mb-2">Your exam controller for secure online examinations.</p>
+          <p class="text-sm text-gray-600">Head to <span class="font-semibold text-emerald-600">Test</span> section to begin!</p>
+        </div>
+        
+        <!-- Got it Button -->
+        <button onclick="closeWelcomePopup()" class="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-6 rounded-lg transition duration-300 text-sm">
+          Got it!
+        </button>
+        
+        <div class="text-xs text-gray-500 mt-5">
+          <i data-lucide="info" class="inline w-3 h-3 mr-1"></i>
+          Platform Version: <span class="font-bold">Xam4.0</span>
+        </div>
+      </div>
+      
+      <!-- Slightly bigger full-height image extending out -->
+      <div class="w-44 md:w-52 relative overflow-visible"> <!-- Increased from w-40 md:w-48 -->
+        <div class="absolute inset-0 flex items-center justify-center">
+          <img 
+            src="xavi1-pop.png" 
+            alt="Xavi the Fox" 
+            class="h-full w-auto object-contain relative"
+            style="right: -18px; filter: drop-shadow(-5px 0 12px rgba(0, 0, 0, 0.12));" <!-- Slightly more extension and shadow -->
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+<nav class="border-b shadow-sm sticky top-0 bg-white z-40">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center gap-2 brand text-2xl font-extrabold text-emerald-600">
+      <i data-lucide="graduation-cap"></i> Xamplore
+      <span class="text-xs font-normal bg-emerald-100 text-emerald-700 px-2 py-1 rounded">v4.0</span>
+    </div>
+
+    <div class="hidden md:flex gap-8 font-semibold">
+      <button onclick="showSection('home')">Home</button>
+      <button onclick="showSection('test')">Test</button>
+      <button onclick="showSection('courses')">Courses</button>
+      <button onclick="showSection('hangman')">Hangman</button>
+      <button onclick="showSection('admin')">Admin</button>
+      <button onclick="showSection('about')">About</button>
+    </div>
+
+    <button class="md:hidden" onclick="toggleMenu()">
+      <i data-lucide="menu"></i>
+    </button>
+  </div>
+
+  <div id="mobileMenu" class="hidden md:hidden px-6 pb-4 space-y-3 font-semibold">
+    <button onclick="showSection('home')" class="block">Home</button>
+    <button onclick="showSection('test')" class="block">Test</button>
+    <button onclick="showSection('courses')" class="block">Courses</button>
+    <button onclick="showSection('hangman')" class="block">Hangman</button>
+    <button onclick="showSection('admin')" class="block">Admin</button>
+    <button onclick="showSection('about')" class="block">About</button>
+  </div>
+</nav>
+
+<!-- Enhanced Home Page -->
+<section id="home" class="py-12 md:py-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Hero Section -->
+    <div class="text-center mb-16">
+      <h1 class="text-4xl md:text-5xl font-extrabold brand text-emerald-600 mb-4">
+        Smarter Exams. Fairer Assessment.
+      </h1>
+      <p class="text-xl md:text-2xl font-semibold text-gray-700 mb-6">Built for SRCAS Students</p>
+      <p class="text-lg text-gray-600 max-w-3xl mx-auto mb-8">
+        Xamplore is a secure online examination platform with advanced anti-cheating measures and strict timing controls.
+      </p>
+      <button onclick="showSection('test')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition duration-300">
+        Start Your Exam Journey
+      </button>
+    </div>
+
+    <!-- Features Section -->
+    <div class="mb-16">
+      <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">Why Choose Xamplore?</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="bg-emerald-100 p-3 rounded-lg">
+              <i data-lucide="shield" class="text-emerald-600 w-6 h-6"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800">Secure & Fair</h3>
+          </div>
+          <p class="text-gray-600">Advanced anti-cheating measures including tab switching detection and real-time monitoring ensure every exam is fair.</p>
+        </div>
+        
+        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="bg-emerald-100 p-3 rounded-lg">
+              <i data-lucide="clock" class="text-emerald-600 w-6 h-6"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800">Time Control</h3>
+          </div>
+          <p class="text-gray-600">Flexible exam windows with precise timing controls. Admin-controlled schedules for organized examination sessions.</p>
+        </div>
+        
+        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="bg-emerald-100 p-3 rounded-lg">
+              <i data-lucide="bar-chart" class="text-emerald-600 w-6 h-6"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800">Smart Analytics</h3>
+          </div>
+          <p class="text-gray-600">Comprehensive admin dashboard with real-time student tracking and detailed performance analytics.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mission Section -->
+    <div class="bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-2xl p-8 md:p-12 mb-16">
+      <div class="flex flex-col md:flex-row items-center">
+        <div class="md:w-2/3 mb-8 md:mb-0 md:pr-12">
+          <h2 class="text-3xl font-bold text-gray-800 mb-6">Our Mission & Vision</h2>
+          <p class="text-gray-700 mb-4">
+            Xamplore was created to address online education challenges during the digital transformation era. We maintain academic integrity while providing flexibility for remote learning.
+          </p>
+          <p class="text-gray-700">
+            Our vision is to create a world where online examinations are as credible and secure as traditional in-person tests.
+          </p>
+        </div>
+        <div class="md:w-1/3">
+          <div class="bg-white p-6 rounded-xl shadow-lg">
+            <div class="flex items-center gap-3 mb-4">
+              <i data-lucide="target" class="text-emerald-600 w-8 h-8"></i>
+              <h3 class="text-xl font-bold text-gray-800">Key Objectives</h3>
+            </div>
+            <ul class="space-y-3">
+              <li class="flex items-start gap-2">
+                <i data-lucide="check-circle" class="text-emerald-500 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+                <span>Prevent academic dishonesty</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check-circle" class="text-emerald-500 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+                <span>Provide equal opportunity</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="check-circle" class="text-emerald-500 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+                <span>Simplify exam administration</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add this section after the "Our Mission & Vision" section -->
+<!-- Meet Xavi Section -->
+<div class="mb-16">
+  <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">Meet Your Exam Companion</h2>
+  <div class="flex flex-col md:flex-row items-center gap-8">
+    <!-- Text Content -->
+    <div class="md:w-1/2">
+      <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="bg-emerald-100 p-3 rounded-lg">
+            <i data-lucide="sparkles" class="text-emerald-600 w-8 h-8"></i>
+          </div>
+          <div>
+            <h3 class="text-2xl font-bold text-gray-800">Xavi the Fox</h3>
+            <p class="text-sm text-gray-600">Your Trusted Exam Guardian</p>
+          </div>
+        </div>
+        <p class="text-gray-700 mb-4">
+          Xavi isn't just a mascot—he's your personal guide through the Xamplore examination journey. With keen observation skills and a passion for fairness, Xavi ensures every exam is conducted with integrity.
+        </p>
+        <ul class="space-y-4 mb-6">
+          <li class="flex items-start gap-3">
+            <i data-lucide="shield" class="text-emerald-500 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+            <div>
+              <p class="font-medium text-gray-800">Security Sentinel</p>
+              <p class="text-sm text-gray-600">Monitors exam sessions for fairness</p>
+            </div>
+          </li>
+          <li class="flex items-start gap-3">
+            <i data-lucide="clock" class="text-emerald-500 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+            <div>
+              <p class="font-medium text-gray-800">Timekeeper</p>
+              <p class="text-sm text-gray-600">Helps you manage exam time effectively</p>
+            </div>
+          </li>
+          <li class="flex items-start gap-3">
+            <i data-lucide="help-circle" class="text-emerald-500 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+            <div>
+              <p class="font-medium text-gray-800">Guidance Assistant</p>
+              <p class="text-sm text-gray-600">Appears throughout your exam journey</p>
+            </div>
+          </li>
+        </ul>
+        <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200">
+          <p class="text-sm text-emerald-700 italic">
+            <i data-lucide="quote" class="inline w-4 h-4 mr-1"></i>
+            "A fair exam is a true test of knowledge. I'm here to make sure everyone gets an equal opportunity to shine!"
+          </p>
+          <p class="text-xs text-emerald-600 mt-2 text-right">- Xavi the Fox</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Xavi Image with Animated Green Circle -->
+    <div class="md:w-1/2 relative flex justify-center items-center min-h-96">
+      <!-- Animated Gradient Circle (bigger than the image) -->
+      <div class="absolute w-80 h-80 md:w-96 md:h-96 rounded-full animate-gradient-pulse"></div>
+      
+      <!-- Image Container -->
+      <div class="relative z-10">
+        <img 
+          src="xavi-intro.png" 
+          alt="Xavi the Fox - Your Exam Companion"
+          class="w-64 h-auto md:w-80 drop-shadow-2xl"
+        >
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- Stats Section -->
+    <div class="mb-16">
+      <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">Platform Highlights</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="text-center p-6 bg-white rounded-xl shadow border border-gray-200">
+          <div class="text-3xl font-bold text-emerald-600 mb-2">3+</div>
+          <p class="text-gray-600 font-medium">Exam Patterns</p>
+        </div>
+        <div class="text-center p-6 bg-white rounded-xl shadow border border-gray-200">
+          <div class="text-3xl font-bold text-emerald-600 mb-2">100%</div>
+          <p class="text-gray-600 font-medium">Secure Platform</p>
+        </div>
+        <div class="text-center p-6 bg-white rounded-xl shadow border border-gray-200">
+          <div class="text-3xl font-bold text-emerald-600 mb-2">24/7</div>
+          <p class="text-gray-600 font-medium">Availability</p>
+        </div>
+        <div class="text-center p-6 bg-white rounded-xl shadow border border-gray-200">
+          <div class="text-3xl font-bold text-emerald-600 mb-2">0</div>
+          <p class="text-gray-600 font-medium">Cheating Tolerance</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="text-center bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl p-10 text-white">
+      <h2 class="text-3xl font-bold mb-4">Ready to Experience Secure Exams?</h2>
+      <p class="text-lg mb-6 max-w-2xl mx-auto">Join SRCAS students who trust Xamplore for their online assessments.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <button onclick="showSection('test')" class="bg-white text-emerald-600 hover:bg-gray-100 font-bold py-3 px-8 rounded-lg shadow-lg transition duration-300">
+          Start Your Exam
+        </button>
+        <button onclick="showSection('about')" class="bg-transparent border-2 border-white hover:bg-white/10 text-white font-bold py-3 px-8 rounded-lg transition duration-300">
+          Learn More
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Test Section (Updated with Xavi image in rules) -->
+<section id="test" class="hidden py-16">
+  <div class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-xl">
+
+    <!-- Exam Window Status Display -->
+    <div id="examWindowStatus" class="hidden mb-4 p-3 border rounded-lg text-center">
+      <div id="examWindowContent">
+      </div>
+    </div>
+
+    <!-- Global Timer | Added:Xam2.0 -->
+    <div id="globalTimerDisplay" class="hidden mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
+      <div class="flex items-center justify-center gap-2">
+        <i data-lucide="clock" class="text-yellow-600"></i>
+        <span class="font-bold text-yellow-700">Exam Window:</span>
+        <span id="globalTimer" class="font-mono text-xl font-bold text-yellow-800">--:--</span>
+      </div>
+      <p id="timerMessage" class="text-xs text-yellow-600 mt-1"></p>
+    </div>
+
+    <div id="loader" class="hidden text-center py-10">
+      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600 mx-auto"></div>
+      <p class="mt-3 text-emerald-600 font-semibold">Connecting to Server...</p>
+    </div>
+
+    <div id="login">
+      <h2 class="text-2xl font-bold mb-4 text-emerald-600">Exam Login</h2>
+      
+      <div id="completedPatternsWarning" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+        <div class="flex items-center gap-2 text-sm text-red-600 mb-2">
+          <i data-lucide="alert-circle" class="text-red-600"></i>
+          <span class="font-semibold">Completed Patterns:</span>
+        </div>
+        <div id="completedPatternsList" class="flex flex-wrap gap-2">
+          
+        </div>
+        <p class="text-xs text-red-500 mt-2">You cannot retake completed patterns</p>
+      </div>
+      
+      <input id="nameInput" class="w-full p-2 mb-3 border rounded" placeholder="Your Name">
+      <select id="patternSelect" class="w-full p-2 mb-3 border rounded">
+        <option value="">Select Pattern</option>
+        <option value="A">Pattern A</option>
+        <option value="B">Pattern B</option>
+        <option value="C">Pattern C</option>
+      </select>
+      
+      <input id="passwordInput" type="password" class="w-full p-2 mb-4 border rounded" placeholder="Pattern Password">
+      <button onclick="verifyLogin()" class="w-full bg-emerald-600 text-white p-2 rounded font-semibold">
+        Continue
+      </button>
+      <p id="patternWarning" class="text-red-500 text-xs mt-2 hidden"></p>
+    </div>
+
+    <!-- Updated Rules Section with Xavi Image -->
+    <div id="rules" class="hidden">
+      <h2 class="text-xl font-bold text-emerald-600 mb-3">Rules & Regulations</h2>
+      <p class="text-sm text-gray-600 mb-4">Read these rules carefully before proceeding.</p>
+      
+      <ul class="list-disc pl-5 text-sm space-y-2 mb-6">
+        <li class="flex items-start gap-2">
+          <i data-lucide="monitor-off" class="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0"></i>
+          <span><strong>No tab switching</strong> - System detects browser tab switches</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <i data-lucide="minimize" class="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0"></i>
+          <span><strong>No exiting fullscreen</strong> - Remain in fullscreen mode</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <i data-lucide="copy" class="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0"></i>
+          <span><strong>No screenshots or copy-paste</strong></span>
+        </li>
+        <li class="flex items-start gap-2">
+          <i data-lucide="alert-triangle" class="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0"></i>
+          <span><strong>Violations end the test</strong></span>
+        </li>
+        <li class="flex items-start gap-2">
+          <i data-lucide="clock" class="w-4 h-4 text-yellow-500 mt-0.5 flex-shrink-0"></i>
+          <span><strong>Timed submission only</strong></span>
+        </li>
+        <li class="flex items-start gap-2">
+          <i data-lucide="lock" class="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0"></i>
+          <span><strong>No retakes on completed patterns</strong></span>
+        </li>
+      </ul>
+      
+      <!-- Xavi Rules Image -->
+      <div class="bg-gradient-to-r from-emerald-50 to-emerald-100 p-4 rounded-lg border border-emerald-200 mb-6 text-center">
+        <div class="mb-3">
+          <img src="xavi2-rules.png" alt="Xavi - Rules Guardian" class="w-32 h-auto mx-auto rounded-lg">
+        </div>
+        <p class="text-sm font-medium text-emerald-700 mb-1">Remember the rules!</p>
+        <p class="text-xs text-emerald-600">- Xavi the Fox</p>
+      </div>
+      
+      <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-lg mb-4">
+        <div class="flex items-start gap-2">
+          <i data-lucide="alert-circle" class="text-yellow-600 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+          <div>
+            <p class="text-sm font-semibold text-yellow-700">Important Notice</p>
+            <p class="text-xs text-yellow-600">By clicking "I Agree", you confirm you have read and understood all rules.</p>
+          </div>
+        </div>
+      </div>
+      
+      <button onclick="startExam()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-lg font-semibold shadow transition duration-300">
+        <i data-lucide="check-circle" class="inline w-5 h-5 mr-2"></i> I Agree & Start Exam
+      </button>
+    </div>
+
+    <div id="exam" class="hidden">
+      <div class="mb-4 p-2 bg-emerald-50 border border-emerald-200 rounded text-center">
+        <p class="text-sm text-emerald-700">
+          <i data-lucide="info" class="inline w-4 h-4 mr-1"></i>
+          You can answer questions now, but can only submit when timer ends
+        </p>
+      </div>
+      <div id="questionBox"></div>
+      <button id="nextButton" onclick="nextQuestion()" class="mt-4 w-full bg-emerald-600 text-white p-2 rounded">
+        Next
+      </button>
+    </div>
+
+    <div id="waitingForTimer" class="hidden text-center">
+      <div class="mb-6">
+        <i data-lucide="clock" class="w-16 h-16 mx-auto text-yellow-500"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-yellow-600 mb-4">Waiting for Timer</h2>
+      <p class="text-gray-600 mb-4">Your exam has been submitted, but you must wait for the timer to end to get results.</p>
+      <p class="text-sm text-gray-500 mb-6">Do not close or switch tabs during this time.</p>
+      <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
+        <p class="font-semibold text-yellow-700">Time Remaining:</p>
+        <div id="waitingTimer" class="text-3xl font-bold text-yellow-800 font-mono my-2">00:00</div>
+        <p class="text-xs text-yellow-600">Results will be available after timer ends</p>
+      </div>
+      <p id="waitingStatus" class="text-sm text-gray-500"></p>
+    </div>
+
+ <div id="failed" class="hidden text-center p-6">
+  <div class="mb-6">
+    <i data-lucide="x-circle" class="w-16 h-16 mx-auto text-red-500"></i>
+  </div>
+  <h2 class="text-2xl font-bold text-red-600 mb-2">Test Failed</h2>
+  <p class="text-sm text-gray-600 mb-4">Malpractice detected or window focus lost.</p>
+  
+  <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+    <div class="flex items-start gap-3">
+      <i data-lucide="alert-triangle" class="text-red-500 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+      <div class="text-left">
+        <p class="font-semibold text-red-700 text-sm mb-1">Second Chance Required</p>
+        <p class="text-xs text-red-600">Please ask the invigilator for the one-time retry code.</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="relative mb-4" id="secondPassContainer">
+    <!-- Input will be dynamically created here -->
+  </div>
+  
+  <button onclick="secondChance()" class="mt-3 w-full bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-lg font-semibold transition duration-300">
+    <i data-lucide="refresh-cw" class="inline w-4 h-4 mr-2"></i> Retry Exam
+  </button>
+  
+  <div id="retryMsg" class="text-red-500 text-xs mt-3 font-medium"></div>
+  
+  <button onclick="resetToLogin()" class="mt-4 w-full bg-gray-600 hover:bg-gray-700 text-white p-2 rounded text-sm">
+    <i data-lucide="arrow-left" class="inline w-4 h-4 mr-2"></i> Back to Login
+  </button>
+</div>
+  
+    <div id="result" class="hidden text-center">
+      <div class="mb-6">
+        <i data-lucide="trophy" class="w-16 h-16 mx-auto text-emerald-500"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-emerald-600">Test Completed Successfully!</h2>
+      <p id="resultText" class="mt-3 text-lg font-semibold"></p>
+      <div class="mt-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+        <p class="text-sm text-emerald-700 mb-2">Pattern Completed: <span class="font-bold" id="completedPatternDisplay"></span></p>
+        <p class="text-xs text-emerald-600">You cannot retake this pattern</p>
+      </div>
+      <div class="mt-6 space-y-3">
+        <button onclick="downloadPDF()" class="w-full bg-emerald-600 text-white p-2 rounded font-semibold">
+          <i data-lucide="download" class="inline w-4 h-4 mr-2"></i> Download PDF Certificate
+        </button>
+        <button onclick="resetToLogin()" class="w-full bg-emerald-500 text-white p-2 rounded">
+          <i data-lucide="rotate-ccw" class="inline w-4 h-4 mr-2"></i> Take Another Test (Different Pattern)
+        </button>
+        <button onclick="showSection('home')" class="w-full bg-gray-600 text-white p-2 rounded">
+          <i data-lucide="home" class="inline w-4 h-4 mr-2"></i> Return to Home
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- HANGMAN Game -->
+<!-- Updated HANGMAN Game -->
+<section id="hangman" class="hidden py-12 md:py-16">
+  <div class="max-w-4xl mx-auto px-4">
+    <div class="text-center mb-10">
+      <h2 class="text-3xl md:text-4xl font-bold brand text-emerald-600 mb-4">Tech Hangman</h2>
+      <p class="text-lg text-gray-600 mb-6">Guess the tech-related word before you run out of lives!</p>
+      <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">
+        <div class="flex items-center justify-center gap-3">
+          <i data-lucide="info" class="text-emerald-600 w-5 h-5"></i>
+          <p class="text-sm text-emerald-700">You have 7 lives. Each wrong guess costs one life!</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-gray-200">
+      <!-- Game display will be inserted here by JavaScript -->
+      <div id="hangmanWordDisplay" class="text-center mb-8"></div>
+      <div id="letterButtons" class="mb-8"></div>
+      
+      <div class="text-center">
+        <button onclick="initializeHangman()" 
+                class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition duration-300 flex items-center gap-2 mx-auto">
+          <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+          New Game
+        </button>
+        <p class="text-xs text-gray-500 mt-4">
+          Hint: All words are related to programming, web development, or tech tools
+        </p>
+      </div>
+    </div>
+    
+    <!-- Game Instructions -->
+    <div class="mt-8 bg-gray-50 p-6 rounded-xl border border-gray-200">
+      <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <i data-lucide="gamepad-2" class="text-emerald-600"></i>
+        How to Play
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="flex items-start gap-3">
+          <div class="bg-emerald-100 p-2 rounded-lg">
+            <i data-lucide="mouse-pointer" class="w-5 h-5 text-emerald-600"></i>
+          </div>
+          <div>
+            <p class="font-medium text-gray-800">Click Letters</p>
+            <p class="text-sm text-gray-600">Click on letters to guess the word</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="bg-emerald-100 p-2 rounded-lg">
+            <i data-lucide="heart" class="w-5 h-5 text-red-500"></i>
+          </div>
+          <div>
+            <p class="font-medium text-gray-800">7 Lives</p>
+            <p class="text-sm text-gray-600">You start with 7 hearts</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="bg-emerald-100 p-2 rounded-lg">
+            <i data-lucide="lightbulb" class="w-5 h-5 text-yellow-500"></i>
+          </div>
+          <div>
+            <p class="font-medium text-gray-800">Use Hints</p>
+            <p class="text-sm text-gray-600">Read the hint to help you guess</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+  <!-- Enhanced Courses Section -->
+<section id="courses" class="hidden py-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Hero Section -->
+    <div class="text-center mb-16">
+      <h2 class="text-4xl md:text-5xl font-extrabold brand text-emerald-600 mb-4">
+        Programming Resource Hub
+      </h2>
+      <p class="text-xl text-gray-600 mb-6">Curated tutorials & learning resources for SRCAS students</p>
+      <div class="flex flex-wrap justify-center gap-3 mb-8">
+        <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm">C/C++</span>
+        <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm">Python</span>
+        <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm">Java</span>
+        <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm">JavaScript</span>
+        <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm">HTML/CSS</span>
+        <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm">Frameworks</span>
+      </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="mb-8">
+      <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+        <div class="flex flex-col md:flex-row gap-4">
+          <div class="flex-1">
+            <div class="relative">
+              <i data-lucide="search" class="absolute left-3 top-3 text-gray-400 w-5 h-5"></i>
+              <input type="text" id="courseSearch" placeholder="Search tutorials by language, topic, or instructor..." 
+                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+            </div>
+          </div>
+          <select id="languageFilter" class="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500">
+            <option value="">All Languages</option>
+            <option value="c">C Programming</option>
+            <option value="cpp">C++</option>
+            <option value="python">Python</option>
+            <option value="java">Java</option>
+            <option value="javascript">JavaScript</option>
+            <option value="web">HTML/CSS/Tailwind</option>
+            <option value="frameworks">Frameworks</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tutorials Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+      <!-- Tutorial cards will be dynamically inserted here -->
+    </div>
+
+    <!-- Language Sections -->
+    <div id="languageSections">
+      <!-- Each language section will be dynamically generated -->
+    </div>
+
+    <!-- Featured Websites Section -->
+        <div class="mb-16 px-4 sm:px-0">
+          <h3 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 sm:mb-8 text-center">Essential Learning Platforms</h3>
+           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <a href="https://freecodecamp.org" target="_blank" class="group">
+          <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300 text-center h-full">
+            <div class="mb-4">
+              <i data-lucide="code" class="w-12 h-12 text-emerald-600 mx-auto"></i>
+            </div>
+            <h4 class="font-bold text-lg text-gray-800 mb-2 group-hover:text-emerald-600">freeCodeCamp</h4>
+            <p class="text-sm text-gray-600">Free interactive coding tutorials and projects</p>
+          </div>
+        </a>
+
+        <a href="https://developer.mozilla.org" target="_blank" class="group">
+          <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300 text-center h-full">
+            <div class="mb-4">
+              <i data-lucide="book-open" class="w-12 h-12 text-emerald-600 mx-auto"></i>
+            </div>
+            <h4 class="font-bold text-lg text-gray-800 mb-2 group-hover:text-emerald-600">MDN Web Docs</h4>
+            <p class="text-sm text-gray-600">Complete web development documentation</p>
+          </div>
+        </a>
+
+        <a href="https://w3schools.com" target="_blank" class="group">
+          <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300 text-center h-full">
+            <div class="mb-4">
+              <i data-lucide="graduation-cap" class="w-12 h-12 text-emerald-600 mx-auto"></i>
+            </div>
+            <h4 class="font-bold text-lg text-gray-800 mb-2 group-hover:text-emerald-600">W3Schools</h4>
+            <p class="text-sm text-gray-600">Web tutorials with interactive examples</p>
+          </div>
+        </a>
+
+        <a href="https://leetcode.com" target="_blank" class="group">
+          <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300 text-center h-full">
+            <div class="mb-4">
+              <i data-lucide="brain" class="w-12 h-12 text-emerald-600 mx-auto"></i>
+            </div>
+            <h4 class="font-bold text-lg text-gray-800 mb-2 group-hover:text-emerald-600">LeetCode</h4>
+            <p class="text-sm text-gray-600">Coding interview preparation platform</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+      <!-- Contribute Section -->
+    <div class="mt-16 mb-8 px-4 sm:px-0">
+      <div class="bg-gradient-to-r from-emerald-50 to-green-50 rounded-2xl p-8 md:p-10 border border-emerald-200">
+        <div class="text-center mb-10">
+          <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-full mb-6">
+            <i data-lucide="share-2" class="w-8 h-8 text-emerald-600"></i>
+          </div>
+          <h3 class="text-2xl sm:text-3xl font-bold text-emerald-800 mb-4">Share Your Knowledge</h3>
+          <p class="text-lg text-gray-700 max-w-2xl mx-auto mb-6">
+            Found a helpful programming tutorial? Share it with the SRCAS community to help others learn!
+          </p>
+          <div class="bg-white p-4 rounded-lg border border-emerald-100 inline-block mb-2">
+            <p class="text-sm font-medium text-emerald-700">
+              <i data-lucide="sparkles" class="inline w-4 h-4 mr-2"></i>
+              Your submission will be reviewed and published
+            </p>
+          </div>
+        </div>
+        
+        <!-- Formspree Form -->
+        <form id="contributeForm" action="https://formspree.io/f/xzdelqel" method="POST" class="space-y-6 max-w-2xl mx-auto">
+          <!-- Personal Details -->
+          <div class="bg-white p-6 rounded-xl border border-gray-200">
+            <h4 class="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
+              <i data-lucide="user" class="w-5 h-5 text-emerald-600"></i>
+              Your Details
+            </h4>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="contributorName" class="block text-sm font-medium text-gray-700 mb-1">
+                  Your Name *
+                </label>
+                <input type="text" id="contributorName" name="contributorName" required
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                       placeholder="Enter your name">
+              </div>
+              
+              <div>
+                <label for="contributorClass" class="block text-sm font-medium text-gray-700 mb-1">
+                  Class/Department *
+                </label>
+                <input type="text" id="contributorClass" name="contributorClass" required
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                       placeholder="e.g., CSE 3rd Year">
+              </div>
+            </div>
+          </div>
+          
+          <!-- Course Details -->
+          <div class="bg-white p-6 rounded-xl border border-gray-200">
+            <h4 class="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2">
+              <i data-lucide="book-open" class="w-5 h-5 text-emerald-600"></i>
+              Course Details
+            </h4>
+            
+            <div class="space-y-4">
+              <div>
+                <label for="courseTitle" class="block text-sm font-medium text-gray-700 mb-1">
+                  Course/Video Title *
+                </label>
+                <input type="text" id="courseTitle" name="courseTitle" required
+                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                       placeholder="Enter course title">
+              </div>
+              
+              <div>
+                <label for="courseDescription" class="block text-sm font-medium text-gray-700 mb-1">
+                  Short Description *
+                </label>
+                <textarea id="courseDescription" name="courseDescription" required rows="3"
+                          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                          placeholder="Briefly describe what this course covers"></textarea>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label for="channelName" class="block text-sm font-medium text-gray-700 mb-1">
+                    Channel/Tutor Name *
+                  </label>
+                  <input type="text" id="channelName" name="channelName" required
+                         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                         placeholder="e.g., freeCodeCamp">
+                </div>
+                
+                <div>
+                  <label for="programmingLanguage" class="block text-sm font-medium text-gray-700 mb-1">
+                    Programming Language *
+                  </label>
+                  <select id="programmingLanguage" name="programmingLanguage" required
+                          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                    <option value="">Select Language</option>
+                    <option value="C">C Programming</option>
+                    <option value="C++">C++</option>
+                    <option value="Python">Python</option>
+                    <option value="Java">Java</option>
+                    <option value="JavaScript">JavaScript</option>
+                    <option value="HTML/CSS">HTML/CSS</option>
+                    <option value="React/Angular/Vue">Frameworks (React, Angular, Vue)</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label for="courseLevel" class="block text-sm font-medium text-gray-700 mb-1">
+                    Difficulty Level *
+                  </label>
+                  <select id="courseLevel" name="courseLevel" required
+                          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                    <option value="">Select Level</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                    <option value="All Levels">All Levels</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label for="courseURL" class="block text-sm font-medium text-gray-700 mb-1">
+                    Course URL (YouTube/Link) *
+                  </label>
+                  <input type="url" id="courseURL" name="courseURL" required
+                         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                         placeholder="https://youtube.com/watch?v=...">
+                </div>
+              </div>
+            </div>
+          </div>
+        <!-- Submit Section -->
+<div class="bg-emerald-50 p-6 rounded-xl border border-emerald-200">
+  <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="text-center md:text-left mb-4 md:mb-0">
+      <p class="font-medium text-emerald-800 mb-1 text-sm md:text-base">Ready to help fellow students?</p>
+      <p class="text-xs text-emerald-600">Your contribution will be reviewed within 24 hours</p>
+    </div>
+    
+    <div class="flex flex-col xs:flex-row gap-3 w-full xs:w-auto">
+      <button type="button" onclick="resetContributeForm()"
+              class="px-5 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition duration-300 text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow">
+        <i data-lucide="x-circle" class="w-4 h-4"></i>
+        Clear Form
+      </button>
+      
+      <button type="submit" id="submitButton"
+              class="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition duration-300 text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+        <i data-lucide="send" class="w-4 h-4"></i>
+        Submit for Review
+      </button>
+    </div>
+  </div>
+  
+  <div id="formSuccess" class="hidden mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+    <div class="flex items-center gap-3">
+      <i data-lucide="check-circle" class="w-5 h-5 text-green-600"></i>
+      <div>
+        <p class="font-medium text-green-800 text-sm md:text-base">Thank you for your contribution!</p>
+        <p class="text-xs text-green-600 mt-1">Your course suggestion has been submitted for review.</p>
+      </div>
+    </div>
+  </div>
+  
+  <div id="formError" class="hidden mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+    <div class="flex items-center gap-3">
+      <i data-lucide="alert-circle" class="w-5 h-5 text-red-600"></i>
+      <div>
+        <p class="font-medium text-red-800 text-sm md:text-base">Submission failed</p>
+        <p class="text-xs text-red-600 mt-1">Please check your connection and try again.</p>
+      </div>
+    </div>
+  </div>
+</div>
+          
+          <!-- Hidden Formspree Fields -->
+          <input type="hidden" name="_subject" value="New Course Submission - Xamplore">
+          <input type="hidden" name="_replyto" value="user@example.com">
+          <input type="text" name="_gotcha" style="display:none">
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Enhanced Admin Section -->
+<section id="admin" class="hidden py-16">
+  <div class="max-w-6xl mx-auto px-4">
+    <h2 class="text-3xl font-bold text-center text-emerald-600 mb-8">Admin Dashboard</h2>
+    
+    <div id="adminLogin" class="bg-white p-6 rounded-xl shadow-lg border max-w-md mx-auto">
+      <h3 class="text-xl font-bold text-gray-800 mb-4">Admin Authentication</h3>
+      <input id="adminName" class="w-full p-2 mb-3 border rounded" placeholder="Admin Name" value="Admin Name"><!-- Ellen@SRCAS-->
+      <input id="adminPassword" type="password" class="w-full p-2 mb-4 border rounded" placeholder="Password" value="Password"><!--srcasadmin123-->
+      <button onclick="adminLogin()" class="w-full bg-emerald-600 text-white p-2 rounded font-semibold">
+        Login as Admin
+      </button>
+    </div>
+
+    <div id="adminDashboard" class="hidden bg-white p-6 rounded-xl shadow-lg border mt-6">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-gray-800">Exam Control Panel</h3>
+        <button onclick="adminLogout()" class="text-sm text-red-600 hover:text-red-800">
+          <i data-lucide="log-out" class="inline w-4 h-4 mr-1"></i> Logout
+        </button>
+      </div>
+
+      <!-- Timer Control-->
+      <div class="mb-8 p-4 bg-gray-50 rounded-lg">
+        <h4 class="font-bold text-lg text-gray-700 mb-3 flex items-center gap-2">
+          <i data-lucide="clock"></i> Exam Window Control
+        </h4>
+        
+        <!-- Timer Status -->
+        <div id="timerStatus" class="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="font-semibold text-emerald-700">Status:</span>
+              <span id="currentTimerStatus" class="ml-2 px-2 py-1 rounded text-sm font-medium bg-gray-100">Not Active</span>
+            </div>
+            <div id="activeTimerInfo" class="hidden">
+              <span class="font-semibold text-emerald-700">Remaining:</span>
+              <span id="activeTimerRemaining" class="ml-2 font-mono text-lg font-bold">00:00</span>
+            </div>
+          </div>
+          <div id="timerDetails" class="mt-2 text-sm text-gray-600">
+            
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Start In (Minutes)</label>
+            <input id="startInMinutes" type="number" min="0" max="60" value="0" class="w-full p-2 border rounded">
+            <p class="text-xs text-gray-500 mt-1">0 = start immediately</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Duration (Minutes)</label>
+            <input id="durationMinutes" type="number" min="1" max="120" value="30" class="w-full p-2 border rounded">
+            <p class="text-xs text-gray-500 mt-1">Exam window duration</p>
+          </div>
+        </div>
+
+        <button onclick="setExamWindow()" class="w-full mb-4 bg-emerald-600 text-white p-2 rounded font-semibold">
+          Set Exam Window
+        </button>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+          <button onclick="quickSetTimer(5)" class="bg-emerald-100 text-emerald-700 p-2 rounded hover:bg-emerald-200">
+            5 min
+          </button>
+          <button onclick="quickSetTimer(10)" class="bg-emerald-100 text-emerald-700 p-2 rounded hover:bg-emerald-200">
+            10 min
+          </button>
+          <button onclick="quickSetTimer(20)" class="bg-emerald-100 text-emerald-700 p-2 rounded hover:bg-emerald-200">
+            20 min
+          </button>
+          <button onclick="quickSetTimer(30)" class="bg-emerald-100 text-emerald-700 p-2 rounded hover:bg-emerald-200">
+            30 min
+          </button>
+        </div>
+
+        <div class="flex gap-2">
+          <button onclick="pauseGlobalTimer()" class="flex-1 bg-yellow-500 text-white p-2 rounded">
+            <i data-lucide="pause" class="inline w-4 h-4 mr-1"></i> Pause
+          </button>
+          <button onclick="resumeGlobalTimer()" class="flex-1 bg-emerald-500 text-white p-2 rounded">
+            <i data-lucide="play" class="inline w-4 h-4 mr-1"></i> Resume
+          </button>
+          <button onclick="stopGlobalTimer()" class="flex-1 bg-red-600 text-white p-2 rounded">
+            <i data-lucide="square" class="inline w-4 h-4 mr-1"></i> Stop
+          </button>
+        </div>
+
+        <div class="mt-6">
+          <h5 class="font-bold text-gray-700 mb-2 flex items-center gap-2">
+            <i data-lucide="history"></i> Timer History
+          </h5>
+          <div id="timerHistory" class="text-sm text-gray-600">
+            <p class="text-gray-400 italic">No timer history yet</p>
+          </div>
+        </div>
+      </div>
+
+     
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-emerald-600">Total Students</p>
+              <p id="totalStudents" class="text-2xl font-bold text-emerald-700">0</p>
+            </div>
+            <i data-lucide="users" class="text-emerald-500"></i>
+          </div>
+        </div>
+        <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-emerald-600">Active Exams</p>
+              <p id="activeExams" class="text-2xl font-bold text-emerald-700">0</p>
+            </div>
+            <i data-lucide="activity" class="text-emerald-500"></i>
+          </div>
+        </div>
+        <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-emerald-600">Completed</p>
+              <p id="completedExams" class="text-2xl font-bold text-emerald-700">0</p>
+            </div>
+            <i data-lucide="check-circle" class="text-emerald-500"></i>
+          </div>
+        </div>
+        <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-emerald-600">Waiting</p>
+              <p id="waitingExams" class="text-2xl font-bold text-emerald-700">0</p>
+            </div>
+            <i data-lucide="clock" class="text-emerald-500"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Management -->
+      <div class="mb-6">
+        <h4 class="font-bold text-lg text-gray-700 mb-3">Student Management</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Student Name</label>
+            <input id="studentNameInput" class="w-full p-2 border rounded" placeholder="Enter student name">
+          </div>
+          <div class="flex items-end gap-2">
+            <button onclick="clearStudentCompleted()" class="flex-1 bg-red-100 text-red-700 p-2 rounded hover:bg-red-200">
+              Clear Completed
+            </button>
+            <button onclick="endStudentExam()" class="flex-1 bg-red-600 text-white p-2 rounded hover:bg-red-700">
+              End Exam
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student List -->
+      <div>
+        <h4 class="font-bold text-lg text-gray-700 mb-3">Active Students</h4>
+        <div id="studentList" class="border rounded-lg overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="p-3 text-left">Name</th>
+                <th class="p-3 text-left">Pattern</th>
+                <th class="p-3 text-left">Status</th>
+                <th class="p-3 text-left">Progress</th>
+                <th class="p-3 text-left">Completed Patterns</th>
+                <th class="p-3 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="studentTableBody" class="divide-y">
+              
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Enhanced About Page -->
+<section id="about" class="hidden py-12 md:py-20">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl md:text-4xl font-bold text-emerald-600 mb-4">About Xamplore</h2>
+      <p class="text-lg text-gray-600 max-w-3xl mx-auto">Revolutionizing Online Examination Systems with Security and Innovation</p>
+    </div>
+
+    <!-- What is Xamplore -->
+    <div class="mb-16">
+      <div class="flex flex-col md:flex-row items-center gap-8 mb-12">
+        <div class="md:w-1/2">
+          <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 p-8 rounded-2xl border border-emerald-200">
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">What is Xamplore?</h3>
+            <p class="text-gray-700 mb-4">
+              Xamplore is a secure online examination platform designed for educational institutions. It transforms traditional exams into digital, controlled environments.
+            </p>
+            <p class="text-gray-700">
+              It incorporates anti-cheating mechanisms, real-time monitoring, and strict timing controls for fair assessment.
+            </p>
+          </div>
+        </div>
+        <div class="md:w-1/2">
+          <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="bg-emerald-100 p-3 rounded-lg">
+                <i data-lucide="shield" class="text-emerald-600 w-8 h-8"></i>
+              </div>
+              <div>
+                <h4 class="text-xl font-bold text-gray-800">Core Philosophy</h4>
+                <p class="text-sm text-gray-600">Equal Opportunity • Academic Integrity</p>
+              </div>
+            </div>
+            <ul class="space-y-4">
+              <li class="flex items-start gap-3">
+                <i data-lucide="check-circle" class="text-emerald-500 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+                <div>
+                  <p class="font-medium text-gray-800">Secure Assessment Environment</p>
+                  <p class="text-sm text-gray-600">Prevents cheating through security layers</p>
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <i data-lucide="check-circle" class="text-emerald-500 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+                <div>
+                  <p class="font-medium text-gray-800">Remote Examination</p>
+                  <p class="text-sm text-gray-600">Enables exams from anywhere</p>
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <i data-lucide="check-circle" class="text-emerald-500 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+                <div>
+                  <p class="font-medium text-gray-800">Real-time Analytics</p>
+                  <p class="text-sm text-gray-600">Provides instant feedback</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- How It's Made -->
+      <div class="mb-16">
+        <h3 class="text-3xl font-bold text-center text-gray-800 mb-12">How Xamplore Works</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div class="bg-white p-6 rounded-xl shadow border border-gray-200 text-center">
+            <div class="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="user" class="text-emerald-600 w-8 h-8"></i>
+            </div>
+            <h4 class="font-bold text-lg text-gray-800 mb-2">1. Student Login</h4>
+            <p class="text-gray-600 text-sm">Authenticate with credentials</p>
+          </div>
+          
+          <div class="bg-white p-6 rounded-xl shadow border border-gray-200 text-center">
+            <div class="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="shield" class="text-emerald-600 w-8 h-8"></i>
+            </div>
+            <h4 class="font-bold text-lg text-gray-800 mb-2">2. Security Check</h4>
+            <p class="text-gray-600 text-sm">System enforces security measures</p>
+          </div>
+          
+          <div class="bg-white p-6 rounded-xl shadow border border-gray-200 text-center">
+            <div class="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="clock" class="text-emerald-600 w-8 h-8"></i>
+            </div>
+            <h4 class="font-bold text-lg text-gray-800 mb-2">3. Timed Examination</h4>
+            <p class="text-gray-600 text-sm">Answer questions within time limits</p>
+          </div>
+          
+          <div class="bg-white p-6 rounded-xl shadow border border-gray-200 text-center">
+            <div class="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="bar-chart" class="text-emerald-600 w-8 h-8"></i>
+            </div>
+            <h4 class="font-bold text-lg text-gray-800 mb-2">4. Results & Analytics</h4>
+            <p class="text-gray-600 text-sm">Instant scoring with certificates</p>
+          </div>
+        </div>
+        
+        <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl p-8 text-white">
+          <div class="flex flex-col md:flex-row items-center gap-8">
+            <div class="md:w-2/3">
+              <h4 class="text-2xl font-bold mb-4">Advanced Anti-Cheating Technology</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-4 h-4"></i>
+                  <span>Tab Switching Detection</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-4 h-4"></i>
+                  <span>Fullscreen Enforcement</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-4 h-4"></i>
+                  <span>Copy-Paste Prevention</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i data-lucide="check" class="w-4 h-4"></i>
+                  <span>Screen Capture Blocking</span>
+                </div>
+              </div>
+            </div>
+            <div class="md:w-1/3 text-center">
+              <div class="bg-white/20 p-4 rounded-xl inline-block">
+                <i data-lucide="shield-check" class="w-16 h-16"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technology Stack -->
+      <div class="mb-16">
+        <h3 class="text-3xl font-bold text-center text-gray-800 mb-12">Technology Behind Xamplore</h3>
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <h4 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i data-lucide="code" class="text-emerald-600"></i> Frontend
+              </h4>
+              <ul class="space-y-2">
+                <li class="flex items-center gap-2">
+                  <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  <span>HTML5 & CSS3</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  <span>JavaScript (ES6+)</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  <span>Tailwind CSS</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i data-lucide="server" class="text-emerald-600"></i> Backend
+              </h4>
+              <ul class="space-y-2">
+                <li class="flex items-center gap-2">
+                  <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  <span>Node.js</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  <span>Express.js</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  <span>RESTful APIs</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <i data-lucide="shield" class="text-emerald-600"></i> Security
+              </h4>
+              <ul class="space-y-2">
+                <li class="flex items-center gap-2">
+                  <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  <span>Tab Switching Detection</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  <span>Browser Focus Monitoring</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <div class="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                  <span>Fullscreen Enforcement</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team & Vision -->
+      <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl p-10">
+        <div class="text-center mb-8">
+          <h3 class="text-2xl font-bold text-gray-800 mb-4">Our Vision for Online Education</h3>
+          <p class="text-gray-700 max-w-3xl mx-auto">
+            Xamplore represents a shift in online assessment. We believe technology should enhance education, not compromise it.
+          </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="bg-white p-6 rounded-xl shadow border border-gray-200">
+            <h4 class="text-xl font-bold text-gray-800 mb-4">For Students</h4>
+            <ul class="space-y-3">
+              <li class="flex items-start gap-2">
+                <i data-lucide="star" class="text-yellow-500 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+                <span>Fair assessment of knowledge</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="star" class="text-yellow-500 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+                <span>Flexibility for remote exams</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="star" class="text-yellow-500 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+                <span>Immediate feedback</span>
+              </li>
+            </ul>
+          </div>
+          
+          <div class="bg-white p-6 rounded-xl shadow border border-gray-200">
+            <h4 class="text-xl font-bold text-gray-800 mb-4">For Institutions</h4>
+            <ul class="space-y-3">
+              <li class="flex items-start gap-2">
+                <i data-lucide="building" class="text-emerald-500 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+                <span>Reduced administrative work</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="building" class="text-emerald-500 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+                <span>Comprehensive analytics</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <i data-lucide="building" class="text-emerald-500 w-5 h-5 mt-0.5 flex-shrink-0"></i>
+                <span>Maintained academic standards</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Version Info -->
+    <div class="text-center mt-12 pt-8 border-t border-gray-200">
+      <p class="text-gray-600">Xamplore - Strict Timing Exam Platform</p>
+      <p class="text-sm text-gray-500 mt-2">Version 4.0 • Developed for SRCAS</p>
+      <div class="flex items-center justify-center gap-4 mt-4 text-sm text-gray-500">
+        <span class="flex items-center gap-1">
+          <i data-lucide="code" class="w-4 h-4"></i>
+          Modern Web Technologies
+        </span>
+        <span class="flex items-center gap-1">
+          <i data-lucide="shield" class="w-4 h-4"></i>
+          100% Secure
+        </span>
+        <span class="flex items-center gap-1">
+          <i data-lucide="users" class="w-4 h-4"></i>
+          Trusted Platform
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+lucide.createIcons();
+
+  // Add this in your DOMContentLoaded event handler or at the beginning
+document.addEventListener('DOMContentLoaded', () => {
+  // ... existing code ...
+  
+  // Clear admin inputs on page load
+  const adminName = el('adminName');
+  const adminPassword = el('adminPassword');
+  if (adminName) adminName.value = '';
+  if (adminPassword) adminPassword.value = '';
+  
+  // Also clear the second chance password input
+  const secondPass = el('secondPass');
+  if (secondPass) secondPass.value = '';
+});
+  // Update current year in footer
+document.addEventListener('DOMContentLoaded', () => {
+  // ... existing code ...
+  
+  // Update copyright year
+  const currentYearEl = el('currentYear');
+  if (currentYearEl) {
+    currentYearEl.textContent = new Date().getFullYear();
+  }
+  
+  // Refresh icons for footer
+  setTimeout(() => lucide.createIcons(), 100);
+});
+
+// Elements load using Tailwind
+const el = id => document.getElementById(id);
+
+// State
+let questions = []; 
+let currentIndex = 0;
+let userAnswers = []; 
+let finalResults = null; 
+let studentName = "";
+let studentPattern = "";
+let adminAuthenticated = false;
+let adminPollingInterval = null;
+let studentTimerInterval = null;
+let examWindowInterval = null;
+let lastTimerState = { active: false };
+let isWaitingForTimer = false; 
+let examSubmitted = false; 
+let completedPatterns = []; 
+
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => el('welcomePopup').classList.remove('hidden'), 500);
+  checkAuth();
+});
+function closeWelcomePopup() { el('welcomePopup').classList.add('hidden'); }
+
+function toggleMenu(){ el('mobileMenu').classList.toggle("hidden"); }
+function showSection(id){
+  ["home","test","courses","hangman","admin","about"].forEach(s => el(s).classList.add("hidden"));
+  el(id).classList.remove("hidden");
+  el('mobileMenu').classList.add("hidden");
+  if(id === 'hangman') initializeHangman();
+  if(id === 'courses') initializeCourses();
+  if(id === 'admin' && adminAuthenticated) {
+    loadAdminDashboard();
+    startAdminPolling();
+  } else if(id !== 'admin' && adminAuthenticated) {
+    if (adminPollingInterval) {
+      clearInterval(adminPollingInterval);
+      adminPollingInterval = null;
+    }
+  }
+  if(id === 'test') {
+    checkCompletedPatterns();
+    checkExamWindowStatus();
+    if (!examWindowInterval) {
+      examWindowInterval = setInterval(checkExamWindowStatus, 1000);
+    }
+  }
+}
+
+// Reset to Login
+// Reset to Login
+function resetToLogin() {
+  el('login').classList.remove('hidden');
+  el('rules').classList.add('hidden');
+  el('exam').classList.add('hidden');
+  el('waitingForTimer').classList.add('hidden');
+  el('failed').classList.add('hidden');
+  el('result').classList.add('hidden');
+  el('loader').classList.add('hidden');
+  el('globalTimerDisplay').classList.add('hidden');
+  el('examWindowStatus').classList.add('hidden');
+
+  el('nameInput').value = '';
+  el('patternSelect').value = '';
+  el('passwordInput').value = '';
+  el('patternWarning').classList.add('hidden');
+
+  // Clear any dynamic input ID
+  window.currentSecondPassId = null;
+
+  questions = [];
+  currentIndex = 0;
+  userAnswers = [];
+  finalResults = null;
+  isWaitingForTimer = false;
+  examSubmitted = false;
+  
+  if (studentTimerInterval) {
+    clearInterval(studentTimerInterval);
+    studentTimerInterval = null;
+  }
+  
+  checkCompletedPatterns();
+  checkExamWindowStatus();
+}
+
+// EXAM WINDOW FUNCTIONS
+
+async function checkExamWindowStatus() {
+  try {
+    const res = await fetch('/api/timer/status');
+    if (res.ok) {
+      const timerStatus = await res.json();
+      updateExamWindowDisplay(timerStatus);
+    }
+  } catch (e) {
+    console.error("Error checking exam window:", e);
+  }
+}
+
+function updateExamWindowDisplay(timerStatus) {
+  const display = el('examWindowStatus');
+  const content = el('examWindowContent');
+  const globalDisplay = el('globalTimerDisplay');
+  const globalTimer = el('globalTimer');
+  const timerMessage = el('timerMessage');
+  
+  if (timerStatus.active) {
+    display.classList.remove('hidden');
+    globalDisplay.classList.remove('hidden');
+    
+    if (timerStatus.paused) {
+      content.innerHTML = `
+        <div class="flex items-center justify-center gap-2 text-yellow-600">
+          <i data-lucide="pause" class="w-4 h-4"></i>
+          <span class="font-medium">Exam Window Paused</span>
+        </div>
+      `;
+      display.className = 'mb-4 p-3 border rounded-lg text-center exam-waiting';
+      
+      globalTimer.textContent = "PAUSED";
+      timerMessage.textContent = "Exam window is paused";
+      
+    } else if (timerStatus.startTime && Date.now() < timerStatus.startTime) {
+      const timeLeft = timerStatus.startTime - Date.now();
+      const minutes = Math.floor(timeLeft / 60000);
+      const seconds = Math.floor((timeLeft % 60000) / 1000);
+      
+      content.innerHTML = `
+        <div class="flex items-center justify-center gap-2 text-yellow-600">
+          <i data-lucide="clock" class="w-4 h-4"></i>
+          <span class="font-medium">Exam starts in ${minutes}m ${seconds}s</span>
+        </div>
+      `;
+      display.className = 'mb-4 p-3 border rounded-lg text-center exam-waiting';
+      
+      globalTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      timerMessage.textContent = "Waiting for exam to start";
+      
+    } else if (timerStatus.endTime && Date.now() > timerStatus.endTime) {
+      content.innerHTML = `
+        <div class="flex items-center justify-center gap-2 text-red-600">
+          <i data-lucide="x-circle" class="w-4 h-4"></i>
+          <span class="font-medium">Exam Window Closed</span>
+        </div>
+        <p class="text-xs text-gray-500 mt-1">You can submit if you completed the exam</p>
+      `;
+      display.className = 'mb-4 p-3 border rounded-lg text-center exam-closed';
+      
+      globalTimer.textContent = "ENDED";
+      timerMessage.textContent = "Exam window has closed";
+      
+    } else {
+      const timeLeft = timerStatus.endTime - Date.now();
+      const minutes = Math.floor(timeLeft / 60000);
+      const seconds = Math.floor((timeLeft % 60000) / 1000);
+      
+      content.innerHTML = `
+        <div class="flex items-center justify-center gap-2 text-green-600">
+          <i data-lucide="check-circle" class="w-4 h-4"></i>
+          <span class="font-medium">Exam Window Open</span>
+        </div>
+        <p class="text-xs text-gray-500 mt-1">Ends in ${minutes}m ${seconds}s</p>
+      `;
+      display.className = 'mb-4 p-3 border rounded-lg text-center exam-open';
+      
+      globalTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      timerMessage.textContent = "Exam window is open - you can start exams";
+      
+     
+      globalDisplay.classList.add('timer-running');
+    }
+  } else {
+    display.classList.add('hidden');
+    globalDisplay.classList.add('hidden');
+  }
+}
+
+// ADMIN FUNCTIONS
+
+async function adminLogin() {
+  const name = el('adminName').value.trim();
+  const password = el('adminPassword').value;
+
+  if (name !== "Ellen@SRCAS" || password !== "srcasadmin123") {
+    alert("Invalid admin credentials");
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, password })
+    });
+    
+    const data = await res.json();
+    if (res.ok) {
+      adminAuthenticated = true;
+      el('adminLogin').classList.add('hidden');
+      el('adminDashboard').classList.remove('hidden');
+      loadAdminDashboard();
+      startAdminPolling();
+    } else {
+      alert(data.error || "Admin login failed");
+    }
+  } catch (e) {
+    alert("Server error during admin login");
+  }
+}
+
+function adminLogout() {
+  adminAuthenticated = false;
+  el('adminLogin').classList.remove('hidden');
+  el('adminDashboard').classList.add('hidden');
+  if (adminPollingInterval) {
+    clearInterval(adminPollingInterval);
+    adminPollingInterval = null;
+  }
+}
+
+async function loadAdminDashboard() {
+  if (!adminAuthenticated) return;
+  
+  try {
+    const [statsRes, timerRes, studentsRes] = await Promise.all([
+      fetch('/api/admin/stats'),
+      fetch('/api/admin/timer'),
+      fetch('/api/admin/students')
+    ]);
+    
+    const stats = await statsRes.json();
+    const timer = await timerRes.json();
+    const students = await studentsRes.json();
+    
+    el('totalStudents').textContent = stats.totalStudents || 0;
+    el('activeExams').textContent = stats.activeExams || 0;
+    el('completedExams').textContent = stats.completedExams || 0;
+    el('waitingExams').textContent = stats.waitingExams || 0;
+    
+    updateTimerDisplay(timer);
+    updateStudentList(students);
+    
+  } catch (e) {
+    console.error("Error loading admin dashboard:", e);
+  }
+}
+
+function updateTimerDisplay(timer) {
+  const statusEl = el('currentTimerStatus');
+  const activeInfoEl = el('activeTimerInfo');
+  const remainingEl = el('activeTimerRemaining');
+  const detailsEl = el('timerDetails');
+  
+  if (timer.active) {
+    statusEl.textContent = timer.paused ? 'Paused' : 'Running';
+    statusEl.className = 'ml-2 px-2 py-1 rounded text-sm font-medium ' + 
+      (timer.paused ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800');
+    
+    activeInfoEl.classList.remove('hidden');
+    
+    const now = Date.now();
+    let remainingMs = 0;
+    
+    if (timer.paused) {
+      remainingMs = timer.pauseRemaining;
+      detailsEl.innerHTML = `<span class="text-yellow-600">Timer paused</span>`;
+    } else if (timer.endTime) {
+      remainingMs = timer.endTime - now;
+      
+      if (timer.startTime && now < timer.startTime) {
+        const startIn = timer.startTime - now;
+        const startMinutes = Math.floor(startIn / 60000);
+        const startSeconds = Math.floor((startIn % 60000) / 1000);
+        detailsEl.innerHTML = `
+          <div>Starts in: ${startMinutes}m ${startSeconds}s</div>
+          <div>Duration: ${Math.floor(timer.duration / 60)}m ${timer.duration % 60}s</div>
+        `;
+      } else if (timer.endTime > now) {
+        const totalDuration = timer.endTime - (timer.startTime || now);
+        const elapsed = now - (timer.startTime || now);
+        const progress = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100));
+        
+        detailsEl.innerHTML = `
+          <div>Progress: <span class="font-medium">${Math.round(progress)}%</span></div>
+          <div>Ends in: ${Math.floor(remainingMs / 60000)}m ${Math.floor((remainingMs % 60000) / 1000)}s</div>
+        `;
+      } else {
+        detailsEl.innerHTML = `<span class="text-red-600">Exam window closed</span>`;
+      }
+    }
+    
+    if (remainingMs > 0) {
+      const minutes = Math.floor(remainingMs / 60000);
+      const seconds = Math.floor((remainingMs % 60000) / 1000);
+      remainingEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    } else {
+      remainingEl.textContent = '00:00';
+      if (!timer.paused && timer.endTime && timer.endTime <= now) {
+        statusEl.textContent = 'Expired';
+        statusEl.className = 'ml-2 px-2 py-1 rounded text-sm font-medium bg-red-100 text-red-800';
+      }
+    }
+  } else {
+    statusEl.textContent = 'Not Active';
+    statusEl.className = 'ml-2 px-2 py-1 rounded text-sm font-medium bg-gray-100 text-gray-800';
+    activeInfoEl.classList.add('hidden');
+    remainingEl.textContent = '00:00';
+    detailsEl.innerHTML = '<span class="text-gray-500">No exam window set</span>';
+  }
+}
+
+function updateStudentList(students) {
+  const tbody = el('studentTableBody');
+  if (!students || students.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">No active students</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = students.map(student => `
+    <tr class="hover:bg-gray-50">
+      <td class="p-3 font-medium">${student.name}</td>
+      <td class="p-3">Pattern ${student.pattern}</td>
+      <td class="p-3">
+        <span class="px-2 py-1 rounded text-xs font-medium ${
+          student.status === 'started' ? 'bg-blue-100 text-blue-800' :
+          student.status === 'completed' ? 'bg-green-100 text-green-800' :
+          student.status === 'failed' ? 'bg-red-100 text-red-800' :
+          student.status === 'waiting' ? 'bg-yellow-100 text-yellow-800' :
+          'bg-gray-100 text-gray-800'
+        }">
+          ${student.status}
+        </span>
+      </td>
+      <td class="p-3">
+        <div class="w-full bg-gray-200 rounded-full h-2">
+          <div class="bg-emerald-600 h-2 rounded-full" style="width: ${student.progress || 0}%"></div>
+        </div>
+        <div class="text-xs text-gray-500 mt-1">${student.currentQuestion || 0}/${student.totalQuestions || 0}</div>
+      </td>
+      <td class="p-3">
+        ${student.completedPatterns && student.completedPatterns.length > 0 ? 
+          student.completedPatterns.map(p => 
+            `<span class="inline-block px-2 py-1 mr-1 mb-1 text-xs bg-emerald-100 text-emerald-800 rounded">${p}</span>`
+          ).join('') : 
+          '<span class="text-gray-400 text-xs">None</span>'
+        }
+      </td>
+      <td class="p-3">
+        <div class="flex flex-col gap-1">
+          <button onclick="adminEndSpecificExam('${student.name}')" class="text-xs text-red-600 hover:text-red-800">
+            <i data-lucide="x-circle" class="inline w-3 h-3 mr-1"></i> End Exam
+          </button>
+          <button onclick="adminClearStudentCompleted('${student.name}')" class="text-xs text-blue-600 hover:text-blue-800">
+            <i data-lucide="refresh-cw" class="inline w-3 h-3 mr-1"></i> Clear Completed
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+  
+  lucide.createIcons();
+}
+
+async function setExamWindow() {
+  const startInMinutes = parseInt(el('startInMinutes').value) || 0;
+  const durationMinutes = parseInt(el('durationMinutes').value) || 30;
+  
+  if (durationMinutes <= 0) {
+    alert("Please set a valid duration");
+    return;
+  }
+  
+  try {
+    const res = await fetch('/api/admin/timer/set', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ startInMinutes, durationMinutes })
+    });
+    
+    const data = await res.json();
+    if (res.ok) {
+      alert(`Exam window set! ${data.message}`);
+      loadAdminDashboard();
+    } else {
+      alert(data.error || "Failed to set timer");
+    }
+  } catch (e) {
+    alert("Error setting exam window");
+  }
+}
+
+function quickSetTimer(minutes) {
+  el('startInMinutes').value = 0;
+  el('durationMinutes').value = minutes;
+  setExamWindow();
+}
+
+async function startGlobalTimer() {
+  const duration = parseInt(el('durationMinutes').value) || 30;
+  const totalSeconds = duration * 60;
+  
+  try {
+    const res = await fetch('/api/admin/timer/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ duration: totalSeconds })
+    });
+    
+    const data = await res.json();
+    if (res.ok) {
+      alert("Timer started!");
+      loadAdminDashboard();
+    } else {
+      alert(data.error || "Failed to start timer");
+    }
+  } catch (e) {
+    alert("Error starting timer");
+  }
+}
+
+async function pauseGlobalTimer() {
+  try {
+    const res = await fetch('/api/admin/timer/pause', { method: 'POST' });
+    const data = await res.json();
+    if (res.ok) {
+      loadAdminDashboard();
+    } else {
+      alert(data.error || "Failed to pause timer");
+    }
+  } catch (e) {
+    alert("Error pausing timer");
+  }
+}
+
+async function resumeGlobalTimer() {
+  try {
+    const res = await fetch('/api/admin/timer/resume', { method: 'POST' });
+    const data = await res.json();
+    if (res.ok) {
+      loadAdminDashboard();
+    } else {
+      alert(data.error || "Failed to resume timer");
+    }
+  } catch (e) {
+    alert("Error resuming timer");
+  }
+}
+
+async function stopGlobalTimer() {
+  try {
+    const res = await fetch('/api/admin/timer/stop', { method: 'POST' });
+    const data = await res.json();
+    if (res.ok) {
+      alert("Timer stopped!");
+      loadAdminDashboard();
+    } else {
+      alert(data.error || "Failed to stop timer");
+    }
+  } catch (e) {
+    alert("Error stopping timer");
+  }
+}
+
+async function adminEndSpecificExam(studentName) {
+  if (!confirm(`Are you sure you want to end the exam for ${studentName}?`)) return;
+  
+  try {
+    const res = await fetch('/api/admin/end-exam', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentName })
+    });
+    
+    const data = await res.json();
+    if (res.ok) {
+      alert(`Exam ended for ${studentName}`);
+      loadAdminDashboard();
+    } else {
+      alert(data.error || "Failed to end exam");
+    }
+  } catch (e) {
+    alert("Error ending exam");
+  }
+}
+
+async function adminClearStudentCompleted(studentName) {
+  if (!confirm(`Clear completed patterns for ${studentName}? This will allow them to retake tests.`)) return;
+  
+  try {
+    const res = await fetch('/api/admin/clear-completed', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentName })
+    });
+    
+    const data = await res.json();
+    if (res.ok) {
+      alert(`Cleared completed patterns for ${studentName}`);
+      loadAdminDashboard();
+    } else {
+      alert(data.error || "Failed to clear completed patterns");
+    }
+  } catch (e) {
+    alert("Error clearing completed patterns");
+  }
+}
+
+async function endStudentExam() {
+  const studentName = el('studentNameInput').value.trim();
+  if (!studentName) {
+    alert("Please enter a student name");
+    return;
+  }
+  
+  await adminEndSpecificExam(studentName);
+  el('studentNameInput').value = '';
+}
+
+async function clearStudentCompleted() {
+  const studentName = el('studentNameInput').value.trim();
+  if (!studentName) {
+    alert("Please enter a student name");
+    return;
+  }
+  
+  await adminClearStudentCompleted(studentName);
+  el('studentNameInput').value = '';
+}
+
+function startAdminPolling() {
+  if (adminPollingInterval) clearInterval(adminPollingInterval);
+  adminPollingInterval = setInterval(loadAdminDashboard, 3000);
+}
+
+//BACKEND API INTERACTION
+
+async function checkAuth() {
+    try {
+        const res = await fetch('/api/me');
+        const data = await res.json();
+        
+        if (data.loggedIn) {
+            studentName = data.name;
+            studentPattern = data.pattern;
+            
+            if (data.status === 'completed') {
+                showResultScreen(data.score, data.totalQuestions, true);
+            } else if (data.status === 'started') {
+                 el('login').classList.add('hidden');
+                 el('rules').classList.remove('hidden');
+            } else if (data.status === 'failed') {
+                 failTestUI();
+            } else if (data.status === 'waiting') {
+                 showWaitingForTimer();
+            }
+            
+           
+            if (data.completedPatterns) {
+                completedPatterns = data.completedPatterns;
+                updateCompletedPatternsUI();
+            }
+        }
+    } catch (e) { console.error("Auth check failed", e); }
+}
+
+async function checkCompletedPatterns() {
+  try {
+    const res = await fetch('/api/completed-patterns');
+    const data = await res.json();
+    
+    if (res.ok && data.completedPatterns) {
+      completedPatterns = data.completedPatterns;
+      updateCompletedPatternsUI();
+    }
+  } catch (e) {
+    console.error("Error checking completed patterns:", e);
+  }
+}
+
+function updateCompletedPatternsUI() {
+  const warning = el('completedPatternsWarning');
+  const list = el('completedPatternsList');
+  const patternSelect = el('patternSelect');
+  
+  if (completedPatterns.length > 0) {
+    warning.classList.remove('hidden');
+    
+   
+    list.innerHTML = completedPatterns.map(pattern => 
+      `<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+        <i data-lucide="x" class="w-3 h-3 mr-1"></i> Pattern ${pattern}
+      </span>`
+    ).join('');
+    
+ 
+    Array.from(patternSelect.options).forEach(option => {
+      if (option.value && completedPatterns.includes(option.value)) {
+        option.disabled = true;
+        option.textContent = `Pattern ${option.value} (Completed)`;
+        option.classList.add('text-gray-400');
+      }
+    });
+    
+    lucide.createIcons();
+  } else {
+    warning.classList.add('hidden');
+  }
+}
+
+async function verifyLogin() {
+    const name = el('nameInput').value.trim();
+    const pattern = el('patternSelect').value;
+    const password = el('passwordInput').value;
+    const patternWarning = el('patternWarning');
+
+    if (!name || !pattern || !password) {
+        patternWarning.textContent = "Please fill all fields";
+        patternWarning.classList.remove('hidden');
+        return;
+    }
+    
+    
+    if (completedPatterns.includes(pattern)) {
+        patternWarning.textContent = `Pattern ${pattern} is already completed. You cannot retake it.`;
+        patternWarning.classList.remove('hidden');
+        return;
+    }
+    
+    patternWarning.classList.add('hidden');
+    el('loader').classList.remove('hidden');
+    el('login').classList.add('hidden');
+
+    try {
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, pattern, password })
+        });
+        
+        const data = await res.json();
+        el('loader').classList.add('hidden');
+
+        if (res.ok) {
+            studentName = name;
+            studentPattern = pattern;
+            el('rules').classList.remove('hidden');
+        } else {
+            patternWarning.textContent = data.error || "Login Failed";
+            patternWarning.classList.remove('hidden');
+            el('login').classList.remove('hidden');
+        }
+    } catch (e) {
+        el('loader').classList.add('hidden');
+        el('login').classList.remove('hidden');
+        patternWarning.textContent = "Server Error";
+        patternWarning.classList.remove('hidden');
+    }
+}
+
+async function startExam() {
+    try {
+        const res = await fetch('/api/start-v2', { method: 'POST' });
+        const data = await res.json();
+        
+        if (res.ok) {
+            questions = data.questions;
+            currentIndex = 0;
+            userAnswers = [];
+            
+            el('rules').classList.add('hidden');
+            el('exam').classList.remove('hidden');
+            
+            try { document.documentElement.requestFullscreen(); } catch(e){}
+            
+            renderQuestion();
+            startMonitoring();
+            
+            if (studentTimerInterval) clearInterval(studentTimerInterval);
+            studentTimerInterval = setInterval(checkExamWindowStatus, 1000);
+            checkExamWindowStatus();
+        } else {
+            alert(data.error);
+            if (data.error.includes("failed")) failTestUI();
+            if (data.error.includes("waiting")) {
+                showWaitingForTimer();
+            }
+            if (data.error.includes("completed")) {
+                checkCompletedPatterns();
+                resetToLogin();
+            }
+        }
+    } catch (e) { alert("Could not start exam"); }
+}
+
+function renderQuestion() {
+    const q = questions[currentIndex];
+    const isLastQuestion = currentIndex >= questions.length - 1;
+    
+    el('questionBox').innerHTML = `
+        <p class="font-semibold mb-4 text-lg">Q${currentIndex+1}: ${q.q}</p>
+        
+        <!-- Container: options on left, QR on right - ALWAYS side by side -->
+        <div class="flex flex-row gap-2">
+            <!-- Options - takes 40% width -->
+            <div class="w-2/5 space-y-2">
+                ${q.options.map(o => `
+                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-3 rounded border border-gray-300 transition duration-200">
+                        <input type="radio" name="ans" value="${o}" class="mr-3 h-4 w-4 text-emerald-600 flex-shrink-0">
+                        <span class="text-gray-700 text-sm md:text-base truncate">${o}</span>
+                    </label>
+                `).join("")}
+            </div>
+            
+            <!-- QR Code - takes 60% width, positioned immediately to the right -->
+            <div class="w-3/5 flex items-center justify-center">
+                <img 
+                    src="xamplore-qr-code.png" 
+                    alt="QR Code"
+                    class="w-full h-auto object-contain"
+                    onerror="this.style.display='none';"
+                >
+            </div>
+        </div>
+    `;
+    
+    const nextButton = el('nextButton');
+    if (isLastQuestion) {
+        nextButton.textContent = 'Submit Exam';
+        nextButton.classList.remove('bg-emerald-600');
+        nextButton.classList.add('bg-purple-600');
+        nextButton.onclick = handleLastQuestion;
+    } else {
+        nextButton.textContent = 'Next';
+        nextButton.classList.remove('bg-purple-600');
+        nextButton.classList.add('bg-emerald-600');
+        nextButton.onclick = nextQuestion;
+    }
+}
+async function handleLastQuestion() {
+    const sel = document.querySelector("input[name='ans']:checked");
+    if (!sel) return alert("Please select an option");
+    
+    userAnswers.push(sel.value);
+    
+    const canSubmit = await checkIfCanSubmit();
+    
+    if (!canSubmit.canSubmit) {
+        alert(`Cannot submit yet. ${canSubmit.message}`);
+        userAnswers.pop(); // Remove the last answer
+        return;
+    }
+    
+    submitExam();
+}
+
+async function nextQuestion() {
+    const sel = document.querySelector("input[name='ans']:checked");
+    if (!sel) return alert("Please select an option");
+    
+    userAnswers.push(sel.value);
+    currentIndex++;
+    
+    if (currentIndex >= questions.length) {
+       
+        const canSubmit = await checkIfCanSubmit();
+        
+        if (!canSubmit.canSubmit) {
+            alert(`Cannot submit yet. ${canSubmit.message}`);
+            currentIndex--; // Go back to last question
+            userAnswers.pop(); // Remove the last answer
+            renderQuestion();
+            return;
+        }
+        
+        submitExam();
+    } else {
+        renderQuestion();
+    }
+}
+
+async function checkIfCanSubmit() {
+    try {
+        const res = await fetch('/api/timer/can-submit');
+        const data = await res.json();
+        return data;
+    } catch (e) {
+        return { canSubmit: true, message: "Error checking submit status" };
+    }
+}
+
+async function submitExam() {
+    el('loader').classList.remove('hidden');
+    el('exam').classList.add('hidden');
+    
+    try {
+        const res = await fetch('/api/submit-v2', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answers: userAnswers })
+        });
+        
+        const data = await res.json();
+        el('loader').classList.add('hidden');
+        
+        if (res.ok) {
+            examSubmitted = true;
+            
+            if (data.waiting) {
+                // Timer is still active, go to waiting mode
+                showWaitingForTimer();
+            } else {
+                // Timer ended or not active, show results immediately
+                finalResults = data.results;
+                showResultScreen(data.score, data.total);
+                stopMonitoring();
+                
+                // Update completed patterns
+                if (!completedPatterns.includes(studentPattern)) {
+                    completedPatterns.push(studentPattern);
+                    updateCompletedPatternsUI();
+                }
+                
+                if (studentTimerInterval) {
+                    clearInterval(studentTimerInterval);
+                    studentTimerInterval = null;
+                }
+            }
+        } else {
+            alert("Submission failed: " + data.error);
+        }
+    } catch (e) { 
+        alert("Error submitting");
+        console.error(e);
+    }
+}
+
+function showWaitingForTimer() {
+  el('login').classList.add('hidden');
+  el('rules').classList.add('hidden');
+  el('exam').classList.add('hidden');
+  el('failed').classList.add('hidden');
+  el('result').classList.add('hidden');
+  el('waitingForTimer').classList.remove('hidden');
+  
+  isWaitingForTimer = true;
+  examSubmitted = true;
+  
+  // Start monitoring for waiting period too
+  startMonitoring();
+  
+  if (studentTimerInterval) clearInterval(studentTimerInterval);
+  studentTimerInterval = setInterval(checkWaitingTimer, 1000);
+  checkWaitingTimer();
+}
+
+async function checkWaitingTimer() {
+  try {
+    const res = await fetch('/api/check-results');
+    const data = await res.json();
+    
+    if (res.ok && data.completed) {
+      
+      finalResults = data.results;
+      showResultScreen(data.score, data.total);
+      stopMonitoring();
+      isWaitingForTimer = false;
+      
+      if (!completedPatterns.includes(studentPattern)) {
+        completedPatterns.push(studentPattern);
+        updateCompletedPatternsUI();
+      }
+      
+      if (studentTimerInterval) {
+        clearInterval(studentTimerInterval);
+        studentTimerInterval = null;
+      }
+    } else if (res.ok && !data.completed) {
+   
+      if (data.remaining) {
+        const minutes = Math.floor(data.remaining / 60000);
+        const seconds = Math.floor((data.remaining % 60000) / 1000);
+        el('waitingTimer').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      }
+      el('waitingStatus').textContent = data.message || "Waiting for timer to end...";
+    }
+  } catch (e) {
+    console.error("Error checking waiting timer:", e);
+  }
+}
+
+function showResultScreen(score, total, minimal = false) {
+    el('login').classList.add('hidden');
+    el('rules').classList.add('hidden');
+    el('exam').classList.add('hidden');
+    el('waitingForTimer').classList.add('hidden');
+    el('failed').classList.add('hidden');
+    el('result').classList.remove('hidden');
+    el('globalTimerDisplay').classList.add('hidden');
+    el('examWindowStatus').classList.add('hidden');
+    
+    try { document.exitFullscreen(); } catch(e){}
+    
+    el('resultText').textContent = `${studentName} — Pattern ${studentPattern} — Score ${score}/${total}`;
+    el('completedPatternDisplay').textContent = studentPattern;
+    
+    if (minimal) {
+        if (!finalResults) document.querySelector("#result button").style.display = 'none';
+        el('resultText').innerHTML += "<br><span class='text-xs text-gray-500'>(Reloaded - PDF unavailable)</span>";
+    }
+}
+
+let monitoringActive = false;
+
+function startMonitoring() {
+    monitoringActive = true;
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleBlur);
+    document.addEventListener("fullscreenchange", handleFullscreen);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+}
+
+function stopMonitoring() {
+    monitoringActive = false;
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
+    window.removeEventListener("blur", handleBlur);
+    document.removeEventListener("fullscreenchange", handleFullscreen);
+    window.removeEventListener("beforeunload", handleBeforeUnload);
+}
+
+function handleVisibilityChange() {
+    if (monitoringActive && document.hidden) triggerFail("Tab switch detected");
+}
+function handleBlur() {
+    if (monitoringActive) triggerFail("Window focus lost");
+}
+function handleFullscreen() {
+    if (monitoringActive && !document.fullscreenElement) triggerFail("Exited fullscreen");
+}
+function handleBeforeUnload(e) {
+    if (monitoringActive) {
+        
+        triggerFail("Window closed");
+        e.preventDefault();
+        e.returnValue = '';
+    }
+}
+
+function triggerFail(reason) {
+    monitoringActive = false;
+    
+    if (examSubmitted && isWaitingForTimer) {
+        fetch('/api/fail-waiting', { method: 'POST' });
+    } else if (monitoringActive) {
+        fetch('/api/fail', { method: 'POST' });
+    }
+    
+    failTestUI();
+}
+
+function failTestUI() {
+    el('exam').classList.add('hidden');
+    el('rules').classList.add('hidden');
+    el('login').classList.add('hidden');
+    el('waitingForTimer').classList.add('hidden');
+    el('result').classList.add('hidden');
+    el('failed').classList.remove('hidden');
+    el('globalTimerDisplay').classList.add('hidden');
+    el('examWindowStatus').classList.add('hidden');
+    
+    try { document.exitFullscreen(); } catch(e){}
+    
+    // SECURE VERSION - Prevent browser auto-fill
+    const container = el('secondPassContainer');
+    if (container) {
+        // Clear the container
+        container.innerHTML = '';
+        
+        // Create a completely new input with anti-auto-fill measures
+        const timestamp = Date.now();
+        const randomId = 'secondPass_' + timestamp + '_' + Math.random().toString(36).substr(2, 9);
+        
+        // Create a wrapper div
+        const wrapper = document.createElement('div');
+        wrapper.className = 'mb-4';
+        
+        // Create label
+        const label = document.createElement('label');
+        label.htmlFor = randomId;
+        label.className = 'block text-sm font-medium text-gray-700 mb-1';
+        label.textContent = 'Second Chance Code (Ask Invigilator)';
+        
+        // Create input with ALL anti-auto-fill measures
+        const input = document.createElement('input');
+        input.type = 'text'; // Use text instead of password initially
+        input.id = randomId;
+        input.name = 'retry_code_' + timestamp;
+        input.className = 'w-full p-2 border border-gray-300 rounded-md text-center tracking-widest text-lg font-mono';
+        input.placeholder = 'XXXXX';
+        input.maxLength = 5;
+        input.inputMode = 'numeric';
+        input.pattern = '[0-9]*';
+        input.autocomplete = 'off';
+        input.autocorrect = 'off';
+        input.autocapitalize = 'off';
+        input.spellcheck = 'false';
+        
+        // Disable browser password managers
+        input.setAttribute('data-lpignore', 'true');
+        input.setAttribute('data-form-type', 'other');
+        input.setAttribute('data-previous-value', '');
+        
+        wrapper.appendChild(label);
+        wrapper.appendChild(input);
+        container.appendChild(wrapper);
+        
+        // Store the current input ID globally
+        window.currentSecondPassId = randomId;
+        
+        // Create hidden dummy password fields to confuse password managers
+        createDummyPasswordFields();
+        
+        // Convert to password field only when typing
+        let isPasswordMode = false;
+        
+        input.addEventListener('focus', function() {
+            // Clear any auto-filled value
+            if (this.value && this.value === this.getAttribute('data-last-value')) {
+                this.value = '';
+            }
+            // Switch to password type when focused
+            if (!isPasswordMode) {
+                this.type = 'password';
+                isPasswordMode = true;
+            }
+        });
+        
+        input.addEventListener('input', function(e) {
+            // Allow only numbers
+            this.value = this.value.replace(/\D/g, '');
+            
+            // Store last value
+            this.setAttribute('data-last-value', this.value);
+            
+            // Ensure it's password type while typing
+            if (!isPasswordMode) {
+                this.type = 'password';
+                isPasswordMode = true;
+            }
+        });
+        
+        input.addEventListener('blur', function() {
+            // Switch back to text when blurred (to prevent save prompt)
+            if (isPasswordMode && !this.value) {
+                this.type = 'text';
+                isPasswordMode = false;
+            }
+        });
+        
+        // Add keypress listener for Enter key
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                secondChance();
+            }
+        });
+        
+        // Focus after a short delay
+        setTimeout(() => {
+            input.focus();
+            // Clear any pre-filled data
+            input.value = '';
+            input.setAttribute('value', '');
+        }, 100);
+    }
+    
+    // Clear the retry message
+    el('retryMsg').textContent = '';
+    el('retryMsg').className = 'text-red-500 text-xs mt-2';
+    
+    if (studentTimerInterval) {
+        clearInterval(studentTimerInterval);
+        studentTimerInterval = null;
+    }
+    
+    isWaitingForTimer = false;
+    examSubmitted = false;
+}
+
+// Function to create dummy password fields to confuse password managers
+function createDummyPasswordFields() {
+    const container = el('secondPassContainer');
+    if (!container) return;
+    
+    // Create hidden dummy fields
+    const dummyFields = [
+        { type: 'password', name: 'password' },
+        { type: 'text', name: 'username' },
+        { type: 'password', name: 'hidden_password' }
+    ];
+    
+    dummyFields.forEach((field, index) => {
+        const dummy = document.createElement('input');
+        dummy.type = field.type;
+        dummy.name = field.name + '_' + Date.now() + '_' + index;
+        dummy.style.display = 'none';
+        dummy.tabIndex = -1;
+        dummy.autocomplete = 'new-password';
+        container.appendChild(dummy);
+    });
+}
+
+// Enhanced secondChance function with brute force prevention
+async function secondChance() {
+    const currentInputId = window.currentSecondPassId;
+    const input = document.getElementById(currentInputId);
+    
+    if (!input) {
+        showRetryError("System error. Please refresh the page.");
+        return;
+    }
+    
+    const code = input.value.trim();
+    
+    if (!code || code.length !== 5) {
+        showRetryError("Please enter a valid 5-digit code from the invigilator");
+        input.focus();
+        return;
+    }
+    
+    // Disable the button to prevent multiple attempts
+    const retryBtn = document.querySelector('#failed button[onclick="secondChance()"]');
+    if (retryBtn) {
+        retryBtn.disabled = true;
+        retryBtn.innerHTML = '<i data-lucide="loader" class="inline w-4 h-4 mr-2 animate-spin"></i> Verifying...';
+        lucide.createIcons();
+    }
+    
+    try {
+        const res = await fetch('/api/retry', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code })
+        });
+        
+        const data = await res.json();
+        
+        // Re-enable button
+        if (retryBtn) {
+            retryBtn.disabled = false;
+            retryBtn.textContent = 'Retry Exam';
+        }
+        
+        if (res.ok) {
+            el('failed').classList.add('hidden');
+            el('rules').classList.remove('hidden');
+            
+            // Clear the input value
+            input.value = '';
+            input.type = 'text';
+            
+            // Remove any stored attempts
+            localStorage.removeItem('lastRetryAttempt');
+            
+        } else {
+            showRetryError(data.error || "Invalid Code. Please ask the invigilator for the current code.");
+            
+            // Clear input on invalid code
+            input.value = '';
+            input.type = 'text';
+            input.focus();
+            
+            // Store attempt to prevent brute force
+            const attempts = parseInt(localStorage.getItem('retryAttempts') || '0');
+            localStorage.setItem('retryAttempts', (attempts + 1).toString());
+            localStorage.setItem('lastRetryAttempt', Date.now().toString());
+            
+            // Implement delay after multiple failed attempts
+            if (attempts >= 3) {
+                showRetryError("Too many failed attempts. Please wait 30 seconds before trying again.");
+                if (retryBtn) retryBtn.disabled = true;
+                setTimeout(() => {
+                    if (retryBtn) retryBtn.disabled = false;
+                    el('retryMsg').textContent = "You may try again now.";
+                    el('retryMsg').className = 'text-yellow-600 text-xs mt-2';
+                }, 30000);
+            }
+        }
+    } catch (e) {
+        showRetryError("Connection error. Please try again.");
+        console.error(e);
+        
+        if (retryBtn) {
+            retryBtn.disabled = false;
+            retryBtn.textContent = 'Retry Exam';
+        }
+    }
+}
+
+function showRetryError(message) {
+    const retryMsg = el('retryMsg');
+    retryMsg.textContent = message;
+    retryMsg.className = 'text-red-500 text-xs mt-2 font-medium';
+    
+    // Add icon
+    retryMsg.innerHTML = `<i data-lucide="alert-circle" class="inline w-4 h-4 mr-1"></i> ${message}`;
+    lucide.createIcons();
+}
+
+async function secondChance() {
+    // Get the value from the current dynamic input
+    const currentInputId = window.currentSecondPassId;
+    const input = document.getElementById(currentInputId);
+    
+    if (!input) {
+        el('retryMsg').textContent = "Please enter the code";
+        return;
+    }
+    
+    const code = input.value.trim();
+    
+    if (!code) {
+        el('retryMsg').textContent = "Please enter the code";
+        return;
+    }
+    
+    try {
+        const res = await fetch('/api/retry', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code })
+        });
+        
+        const data = await res.json();
+        if (res.ok) {
+            el('failed').classList.add('hidden');
+            el('rules').classList.remove('hidden');
+        } else {
+            el('retryMsg').textContent = "Invalid Code";
+            // Clear the input on invalid code
+            input.value = '';
+            input.focus();
+        }
+    } catch (e) {
+        alert("Error connecting");
+    }
+}
+
+function downloadPDF() {
+    if (!finalResults) return alert("Results data not available");
+    
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+    let y = 10;
+    
+    pdf.setFontSize(16);
+    pdf.text(`Xamplore Exam Certificate`, 10, y); y+=8;
+    pdf.setFontSize(12);
+    pdf.text(`Student: ${studentName}`, 10, y); y+=6;
+    pdf.text(`Pattern: ${studentPattern}`, 10, y); y+=6;
+    pdf.text(`Date: ${new Date().toLocaleDateString()}`, 10, y); y+=10;
+    
+    pdf.setFontSize(14);
+    pdf.text(`Score: ${finalResults.filter(r => r.isCorrect).length}/${finalResults.length}`, 10, y); y+=10;
+    
+    pdf.setFontSize(12);
+    pdf.text('Detailed Results:', 10, y); y+=8;
+    
+    finalResults.forEach((r, i) => {
+        if (y > 270) { pdf.addPage(); y=10; }
+        
+        pdf.setFont(undefined, 'bold');
+        pdf.text(`Q${i+1}: ${r.q.substring(0, 60)}${r.q.length > 60 ? '...' : ''}`, 10, y); y+=5;
+        
+        pdf.setFont(undefined, 'normal');
+        pdf.setTextColor(r.isCorrect ? 0 : 200, r.isCorrect ? 100 : 0, 0);
+        pdf.text(`Your Answer: ${r.userAns}`, 15, y); 
+        
+        if (!r.isCorrect) {
+            pdf.setTextColor(0, 100, 0);
+            pdf.text(`Correct: ${r.correctAns}`, 80, y);
+        }
+        y+=7;
+        pdf.setTextColor(0);
+    });
+    
+    pdf.save(`Xamplore_${studentName}_${studentPattern}.pdf`);
+}
+
+// --- HANGMAN ---
+const HANGMAN_WORDS = [
+    // Programming Languages (15)
+    { word: "javascript", hint: "A popular programming language for web development" },
+    { word: "python", hint: "A high-level programming language known for readability" },
+    { word: "typescript", hint: "A typed superset of JavaScript that compiles to plain JavaScript" },
+    { word: "java", hint: "Object-oriented programming language used for Android development" },
+    { word: "kotlin", hint: "Modern programming language for Android development" },
+    { word: "swift", hint: "Apple's programming language for iOS and macOS" },
+    { word: "golang", hint: "Google's statically typed, compiled programming language" },
+    { word: "rust", hint: "Systems programming language focused on safety and performance" },
+    { word: "ruby", hint: "Dynamic programming language focused on simplicity and productivity" },
+    { word: "php", hint: "Server-side scripting language designed for web development" },
+    { word: "csharp", hint: "Microsoft's object-oriented programming language" },
+    { word: "scala", hint: "Programming language combining object-oriented and functional programming" },
+    { word: "perl", hint: "High-level, general-purpose programming language" },
+    { word: "dart", hint: "Client-optimized language for fast apps on any platform" },
+    { word: "lua", hint: "Lightweight, high-level, multi-paradigm programming language" },
+    
+    // Frameworks & Libraries (20)
+    { word: "react", hint: "JavaScript library for building user interfaces" },
+    { word: "angular", hint: "TypeScript-based web application framework" },
+    { word: "vue", hint: "Progressive JavaScript framework for building UIs" },
+    { word: "nodejs", hint: "JavaScript runtime built on Chrome's V8 engine" },
+    { word: "express", hint: "Minimal web application framework for Node.js" },
+    { word: "django", hint: "High-level Python web framework" },
+    { word: "flask", hint: "Micro web framework written in Python" },
+    { word: "spring", hint: "Application framework for Java" },
+    { word: "laravel", hint: "PHP web application framework" },
+    { word: "rails", hint: "Server-side web application framework written in Ruby" },
+    { word: "flutter", hint: "UI toolkit for building natively compiled applications" },
+    { word: "electron", hint: "Framework for building desktop apps with web technologies" },
+    { word: "nextjs", hint: "React framework for production" },
+    { word: "nuxtjs", hint: "Vue framework for creating modern web applications" },
+    { word: "svelte", hint: "Component framework that compiles to JavaScript" },
+    { word: "jquery", hint: "Fast, small, feature-rich JavaScript library" },
+    { word: "bootstrap", hint: "Front-end component library for responsive web design" },
+    { word: "tailwind", hint: "Utility-first CSS framework" },
+    { word: "tensorflow", hint: "Open-source machine learning framework" },
+    { word: "pytorch", hint: "Open-source machine learning library" },
+    
+    // Databases (15)
+    { word: "mongodb", hint: "NoSQL database program using JSON-like documents" },
+    { word: "postgresql", hint: "Open-source relational database system" },
+    { word: "mysql", hint: "Open-source relational database management system" },
+    { word: "sqlite", hint: "C-language library that implements a small database engine" },
+    { word: "redis", hint: "In-memory data structure store used as a database" },
+    { word: "cassandra", hint: "Distributed NoSQL database management system" },
+    { word: "elasticsearch", hint: "Search and analytics engine" },
+    { word: "firebase", hint: "Platform developed by Google for creating mobile and web applications" },
+    { word: "dynamodb", hint: "Amazon's fully managed NoSQL database service" },
+    { word: "oracle", hint: "Multi-model database management system" },
+    { word: "mariadb", hint: "Community-developed fork of MySQL" },
+    { word: "couchdb", hint: "Open-source document-oriented NoSQL database" },
+    { word: "neo4j", hint: "Graph database management system" },
+    { word: "influxdb", hint: "Time series database" },
+    { word: "cockroachdb", hint: "Distributed SQL database" },
+    
+    // Tools & Platforms (20)
+    { word: "docker", hint: "Platform for developing, shipping, and running applications" },
+    { word: "kubernetes", hint: "Open-source container orchestration system" },
+    { word: "jenkins", hint: "Open-source automation server" },
+    { word: "github", hint: "Platform for version control and collaboration" },
+    { word: "gitlab", hint: "Web-based DevOps lifecycle tool" },
+    { word: "aws", hint: "Comprehensive cloud computing platform by Amazon" },
+    { word: "azure", hint: "Microsoft's cloud computing service" },
+    { word: "gcp", hint: "Google Cloud Platform suite of cloud computing services" },
+    { word: "heroku", hint: "Cloud platform as a service" },
+    { word: "vercel", hint: "Cloud platform for static sites and serverless functions" },
+    { word: "netlify", hint: "Cloud computing company offering hosting and serverless backend services" },
+    { word: "ansible", hint: "Open-source software provisioning, configuration management" },
+    { word: "terraform", hint: "Infrastructure as code software tool" },
+    { word: "vagrant", hint: "Tool for building and maintaining portable virtual software environments" },
+    { word: "webpack", hint: "Static module bundler for JavaScript applications" },
+    { word: "npm", hint: "Package manager for JavaScript programming language" },
+    { word: "yarn", hint: "Package manager that doubles down as project manager" },
+    { word: "postman", hint: "API platform for building and using APIs" },
+    { word: "figma", hint: "Collaborative interface design tool" },
+    { word: "vscode", hint: "Source-code editor developed by Microsoft" },
+    
+    // Web Technologies (15)
+    { word: "html", hint: "Standard markup language for documents designed for web browsers" },
+    { word: "css", hint: "Style sheet language used for describing presentation of documents" },
+    { word: "sass", hint: "Preprocessor scripting language that is interpreted into CSS" },
+    { word: "websocket", hint: "Computer communications protocol providing full-duplex channels" },
+    { word: "http", hint: "Application layer protocol for distributed, collaborative systems" },
+    { word: "https", hint: "Secure version of HTTP using encryption" },
+    { word: "restapi", hint: "Architectural style for designing networked applications" },
+    { word: "graphql", hint: "Query language for APIs and runtime for fulfilling queries" },
+    { word: "json", hint: "Lightweight data interchange format" },
+    { word: "xml", hint: "Markup language that defines set of rules for encoding documents" },
+    { word: "ajax", hint: "Technique for creating fast and dynamic web pages" },
+    { word: "oauth", hint: "Open standard for access delegation" },
+    { word: "jwt", hint: "Compact, URL-safe means of representing claims to be transferred" },
+    { word: "pwa", hint: "Web application that can be installed on device home screen" },
+    { word: "seo", hint: "Process of improving quality and quantity of website traffic" },
+    
+    // Cloud & DevOps (15)
+    { word: "serverless", hint: "Cloud computing execution model where cloud provider runs server" },
+    { word: "microservices", hint: "Architectural style that structures app as collection of services" },
+    { word: "container", hint: "Standard unit of software that packages code and dependencies" },
+    { word: "loadbalancer", hint: "Device that acts as reverse proxy and distributes traffic" },
+    { word: "cdn", hint: "Geographically distributed network of proxy servers" },
+    { word: "ci", hint: "Practice of merging all developers' working copies to shared mainline" },
+    { word: "cd", hint: "Software engineering approach where teams produce software in short cycles" },
+    { word: "iac", hint: "Managing and provisioning computer data centers through machine-readable files" },
+    { word: "monitoring", hint: "Process of collecting, analyzing, and using information" },
+    { word: "logging", hint: "Recording events that happen in software execution" },
+    { word: "prometheus", hint: "Systems monitoring and alerting toolkit" },
+    { word: "grafana", hint: "Multi-platform open source analytics and interactive visualization web application" },
+    { word: "sentry", hint: "Cross-platform application monitoring with focus on error reporting" },
+    { word: "datadog", hint: "Monitoring service for cloud-scale applications" },
+    { word: "newrelic", hint: "Performance management solution helping developers improve web applications" },
+    
+    // AI/ML & Data Science (10)
+    { word: "neuralnetwork", hint: "Computing system vaguely inspired by biological neural networks" },
+    { word: "machinelearning", hint: "Scientific study of algorithms and statistical models" },
+    { word: "deeplearning", hint: "Part of broader family of machine learning methods" },
+    { word: "computervision", hint: "Field concerned with how computers can gain understanding from digital images" },
+    { word: "nlp", hint: "Subfield of linguistics, computer science, and AI concerned with human-computer interaction" },
+    { word: "chatgpt", hint: "AI chatbot developed by OpenAI" },
+    { word: "opencv", hint: "Library of programming functions mainly aimed at real-time computer vision" },
+    { word: "pandas", hint: "Software library for data manipulation and analysis" },
+    { word: "numpy", hint: "Library for large, multi-dimensional arrays and matrices" },
+    { word: "matplotlib", hint: "Plotting library for Python programming language" },
+    
+    // Miscellaneous (10)
+    { word: "agile", hint: "Group of iterative development methodologies" },
+    { word: "scrum", hint: "Framework for project management with emphasis on software development" },
+    { word: "kanban", hint: "Visual system for managing work as it moves through process" },
+    { word: "devops", hint: "Set of practices combining software development and IT operations" },
+    { word: "opensource", hint: "Practice of making source code publicly accessible" },
+    { word: "blockchain", hint: "Distributed database that maintains continuously growing list of records" },
+    { word: "cryptocurrency", hint: "Digital currency designed to work as medium of exchange" },
+    { word: "iot", hint: "Network of physical objects embedded with sensors and software" },
+    { word: "ar", hint: "Interactive experience of real-world environment enhanced by computer-generated perceptual information" },
+    { word: "vr", hint: "Simulated experience that can be similar to or completely different from real world" },
+
+    // Development Tools (15)
+    { word: "vscodium", hint: "Free/Libre Open Source Software Binaries of VSCode" },
+    { word: "sublime", hint: "Sophisticated text editor for code, markup and prose" },
+    { word: "vim", hint: "Highly configurable text editor built for efficient editing" },
+    { word: "emacs", hint: "Extensible, customizable text editor with Lisp interpreter" },
+    { word: "intellij", hint: "Integrated development environment for Java development" },
+    { word: "pycharm", hint: "Python IDE for professional developers" },
+    { word: "webstorm", hint: "JavaScript and TypeScript IDE by JetBrains" },
+    { word: "androidstudio", hint: "Official IDE for Android app development" },
+    { word: "xcode", hint: "IDE for macOS containing software development tools" },
+    { word: "eclipse", hint: "Integrated development environment primarily for Java" },
+    { word: "notepadplusplus", hint: "Source code editor and Notepad replacement" },
+    { word: "atom", hint: "Free and open-source text and source code editor" },
+    { word: "brackets", hint: "Open-source text editor with focus on web design" },
+    { word: "insomnia", hint: "API client for REST, GraphQL, and gRPC" },
+    { word: "thunderclient", hint: "Lightweight REST API Client Extension for VS Code" },
+    
+    // Programming Concepts (15)
+    { word: "recursion", hint: "Function calling itself to solve smaller instances" },
+    { word: "polymorphism", hint: "Ability of different objects to respond to same message" },
+    { word: "encapsulation", hint: "Bundling of data with methods operating on that data" },
+    { word: "abstraction", hint: "Hiding complex implementation details" },
+    { word: "inheritance", hint: "Deriving new classes from existing ones" },
+    { word: "interface", hint: "Contract that specifies capabilities a class should provide" },
+    { word: "composition", hint: "Design principle to compose objects for complex behaviors" },
+    { word: "dependencyinjection", hint: "Design pattern for achieving Inversion of Control" },
+    { word: "singleton", hint: "Design pattern restricting instantiation to single object" },
+    { word: "factory", hint: "Creational design pattern for creating objects" },
+    { word: "observer", hint: "Design pattern for event handling systems" },
+    { word: "strategy", hint: "Behavioral design pattern for selecting algorithms" },
+    { word: "decorator", hint: "Design pattern adding behavior to objects dynamically" },
+    { word: "iterator", hint: "Design pattern for traversing container elements" },
+    { word: "adapter", hint: "Design pattern for incompatible interfaces" },
+    
+    // Testing & Quality (10)
+    { word: "jest", hint: "JavaScript testing framework with focus on simplicity" },
+    { word: "mocha", hint: "Feature-rich JavaScript test framework running on Node.js" },
+    { word: "chai", hint: "BDD/TDD assertion library for Node.js and browser" },
+    { word: "cypress", hint: "End-to-end testing framework for web applications" },
+    { word: "selenium", hint: "Portable framework for testing web applications" },
+    { word: "pytest", hint: "Framework for writing small tests in Python" },
+    { word: "junit", hint: "Unit testing framework for Java programming language" },
+    { word: "eslint", hint: "Static code analysis tool for JavaScript and JSX" },
+    { word: "prettier", hint: "Code formatter supporting multiple languages" },
+    { word: "sonarqube", hint: "Platform for continuous inspection of code quality" },
+    
+    // Mobile Development (10)
+    { word: "reactnative", hint: "Framework for building native apps using React" },
+    { word: "xamarin", hint: ".NET developer platform for building iOS and Android apps" },
+    { word: "ionic", hint: "Open source UI toolkit for building mobile apps" },
+    { word: "cordova", hint: "Mobile application development framework" },
+    { word: "capacitor", hint: "Cross-platform native runtime for web apps" },
+    { word: "expo", hint: "Framework and platform for universal React applications" },
+    { word: "appium", hint: "Open source test automation framework for mobile apps" },
+    { word: "realm", hint: "Mobile database alternative to SQLite and Core Data" },
+    { word: "firebaseauth", hint: "Backend service for app authentication" },
+    { word: "onesignal", hint: "Free push notification service for mobile apps" },
+    
+    // DevOps & Infrastructure (10)
+    { word: "ansible", hint: "Open-source software provisioning, configuration management" },
+    { word: "puppet", hint: "Configuration management tool for system administration" },
+    { word: "chef", hint: "Configuration management tool for infrastructure automation" },
+    { word: "saltstack", hint: "Python-based configuration management and remote execution" },
+    { word: "packer", hint: "Open source tool for creating identical machine images" },
+    { word: "consul", hint: "Service networking solution for service discovery" },
+    { word: "vault", hint: "Tool for securely accessing secrets and encrypting data" },
+    { word: "nomad", hint: "Flexible scheduler and orchestrator for containers" },
+    { word: "prometheus", hint: "Systems monitoring and alerting toolkit" },
+    { word: "grafana", hint: "Multi-platform open source analytics and visualization" },
+    
+    // Data & Analytics (10)
+    { word: "apachespark", hint: "Unified analytics engine for large-scale data processing" },
+    { word: "apachehadoop", hint: "Framework for distributed storage and processing" },
+    { word: "apachekafka", hint: "Distributed event streaming platform" },
+    { word: "apacheflink", hint: "Framework for stateful computations over data streams" },
+    { word: "apachebeam", hint: "Unified programming model for batch and streaming data" },
+    { word: "tableau", hint: "Interactive data visualization software" },
+    { word: "powerbi", hint: "Business analytics service by Microsoft" },
+    { word: "looker", hint: "Business intelligence software and big data analytics" },
+    { word: "snowflake", hint: "Cloud-based data warehousing platform" },
+    { word: "databricks", hint: "Unified data analytics platform" },
+    
+    // Security (10)
+    { word: "owasp", hint: "Online community producing freely available security articles" },
+    { word: "burpsuite", hint: "Platform for web application security testing" },
+    { word: "metasploit", hint: "Penetration testing framework for security teams" },
+    { word: "wireshark", hint: "Network protocol analyzer for troubleshooting" },
+    { word: "nmap", hint: "Network discovery and security auditing tool" },
+    { word: "hashicorp", hint: "Company providing infrastructure automation software" },
+    { word: "letsencrypt", hint: "Certificate authority providing free SSL certificates" },
+    { word: "cloudflare", hint: "Web infrastructure and security company" },
+    { word: "auth0", hint: "Identity management platform for developers" },
+    { word: "okta", hint: "Identity and access management service" }
+];
+
+let hangman = {
+    word: "",
+    hint: "",
+    guessed: [],
+    wrongGuesses: [],
+    lives: 7,
+    maxLives: 7,
+    gameOver: false
+};
+
+// Initialize the game when Hangman section is shown
+function initializeHangman() {
+    const randomWord = HANGMAN_WORDS[Math.floor(Math.random() * HANGMAN_WORDS.length)];
+    hangman.word = randomWord.word.toLowerCase();
+    hangman.hint = randomWord.hint;
+    hangman.guessed = [];
+    hangman.wrongGuesses = [];
+    hangman.lives = 7;
+    hangman.maxLives = 7;
+    hangman.gameOver = false;
+    
+    updateHangmanUI();
+}
+
+// Make guessLetter a global function by attaching it to window
+window.guessLetter = function(letter) {
+    if (hangman.gameOver || hangman.guessed.includes(letter) || hangman.wrongGuesses.includes(letter)) {
+        return;
+    }
+    
+    if (hangman.word.includes(letter)) {
+        // Correct guess
+        hangman.guessed.push(letter);
+    } else {
+        // Wrong guess
+        hangman.wrongGuesses.push(letter);
+        hangman.lives--;
+    }
+    
+    updateHangmanUI();
+    
+    // Check game status
+    const hasWon = hangman.word.split('').every(l => hangman.guessed.includes(l));
+    const isLost = hangman.lives <= 0;
+    
+    if (hasWon || isLost) {
+        hangman.gameOver = true;
+        updateHangmanUI();
+    }
+}
+
+function updateHangmanUI() {
+    const hangmanWordDisplay = el('hangmanWordDisplay');
+    const letterButtons = el('letterButtons');
+    
+    if (!hangmanWordDisplay || !letterButtons) return;
+    
+    // Create the word display with underscores for unguessed letters
+    const display = hangman.word.split('').map(l => 
+        hangman.guessed.includes(l) ? l : '_'
+    ).join(' ');
+    
+    // Update word display
+    hangmanWordDisplay.innerHTML = `
+        <div class="mb-6">
+            <div class="text-3xl md:text-4xl font-mono tracking-wider mb-4 text-emerald-700">${display}</div>
+            <div class="text-sm md:text-base text-gray-600 bg-emerald-50 p-3 rounded-lg">
+                <i data-lucide="lightbulb" class="inline w-4 h-4 mr-2 text-yellow-500"></i>
+                <span class="font-medium">Hint:</span> ${hangman.hint}
+            </div>
+        </div>
+    `;
+    
+    // Display lives
+    hangmanWordDisplay.innerHTML += `
+        <div class="mb-6">
+            <div class="flex items-center justify-center gap-1 mb-2">
+                ${Array.from({ length: hangman.maxLives }).map((_, i) => `
+                    <i data-lucide="${i < hangman.lives ? 'heart' : 'heart-off'}" 
+                       class="w-6 h-6 ${i < hangman.lives ? 'text-red-500 fill-red-500' : 'text-gray-300'}"></i>
+                `).join('')}
+            </div>
+            <div class="text-center text-sm text-gray-700 font-medium">
+                Lives: ${hangman.lives}/${hangman.maxLives}
+            </div>
+        </div>
+    `;
+    
+    // Display wrong guesses
+    if (hangman.wrongGuesses.length > 0) {
+        hangmanWordDisplay.innerHTML += `
+            <div class="mb-6 p-4 bg-red-50 rounded-xl border border-red-200">
+                <div class="text-sm text-red-700 font-semibold mb-2 flex items-center gap-2">
+                    <i data-lucide="x-circle" class="w-4 h-4"></i>
+                    Wrong Guesses (${hangman.wrongGuesses.length})
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    ${hangman.wrongGuesses.map(l => 
+                        `<span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">${l.toUpperCase()}</span>`
+                    ).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    // Display win/lose message
+    if (hangman.gameOver) {
+        const hasWon = hangman.word.split('').every(l => hangman.guessed.includes(l));
+        const message = hasWon ? 
+            `<div class="mb-6 p-5 bg-gradient-to-r from-green-50 to-emerald-50 text-green-800 rounded-xl border border-green-200">
+                <div class="flex items-center gap-3 mb-3">
+                    <i data-lucide="trophy" class="w-8 h-8 text-yellow-500"></i>
+                    <div>
+                        <h4 class="font-bold text-lg"> Congratulations! You won! </h4>
+                        <p class="text-sm text-green-700 mt-1">You guessed the word with ${hangman.lives} lives remaining!</p>
+                    </div>
+                </div>
+                <div class="bg-white p-3 rounded-lg text-center">
+                    <p class="text-sm text-gray-600">The word was:</p>
+                    <p class="text-xl font-bold text-emerald-700 mt-1">${hangman.word.toUpperCase()}</p>
+                </div>
+            </div>` :
+            `<div class="mb-6 p-5 bg-gradient-to-r from-red-50 to-orange-50 text-red-800 rounded-xl border border-red-200">
+                <div class="flex items-center gap-3 mb-3">
+                    <i data-lucide="x-circle" class="w-8 h-8 text-red-500"></i>
+                    <div>
+                        <h4 class="font-bold text-lg"> Game Over! You lost! </h4>
+                        <p class="text-sm text-red-700 mt-1">Better luck next time!</p>
+                    </div>
+                </div>
+                <div class="bg-white p-3 rounded-lg text-center">
+                    <p class="text-sm text-gray-600">The word was:</p>
+                    <p class="text-xl font-bold text-emerald-700 mt-1">${hangman.word.toUpperCase()}</p>
+                </div>
+            </div>`;
+        
+        hangmanWordDisplay.innerHTML += message;
+    }
+    
+    // Create letter buttons
+    const alpha = 'abcdefghijklmnopqrstuvwxyz'.split('');
+    const letterButtonsHTML = alpha.map(l => `
+        <button onclick="guessLetter('${l}')" 
+                class="p-3 md:p-4 border rounded-lg transition-all duration-200 font-medium
+                       ${hangman.guessed.includes(l) ? 'bg-emerald-100 text-emerald-700 border-emerald-300 cursor-default' : 
+                         hangman.wrongGuesses.includes(l) ? 'bg-red-100 text-red-700 border-red-300 cursor-default' : 
+                         'bg-white hover:bg-emerald-50 text-gray-700 border-gray-300 hover:border-emerald-400 hover:text-emerald-700 hover:shadow-md'}
+                       ${hangman.gameOver ? 'opacity-50 cursor-not-allowed' : ''}"
+                ${(hangman.guessed.includes(l) || hangman.wrongGuesses.includes(l) || hangman.gameOver) ? 'disabled' : ''}>
+            ${l.toUpperCase()}
+        </button>
+    `).join('');
+    
+    letterButtons.innerHTML = `
+        <div class="mb-4">
+            <div class="text-sm text-gray-500 mb-3 text-center">
+                Click letters to guess the word
+            </div>
+            <div class="grid grid-cols-7 md:grid-cols-9 lg:grid-cols-13 gap-2 mb-8">
+                ${letterButtonsHTML}
+            </div>
+        </div>
+    `;
+    
+    // Update icons
+    setTimeout(() => lucide.createIcons(), 100);
+}
+
+// Add shake animation to your CSS if not already present
+if (!document.querySelector('#hangman-shake-style')) {
+    const style = document.createElement('style');
+    style.id = 'hangman-shake-style';
+    style.textContent = `
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .animate-shake {
+            animation: shake 0.5s ease-in-out;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Also update your showSection function to initialize Hangman properly
+// Add this to your existing showSection function:
+function showSection(id){
+    ["home","test","courses","hangman","admin","about"].forEach(s => el(s).classList.add("hidden"));
+    el(id).classList.remove("hidden");
+    el('mobileMenu').classList.add("hidden");
+    
+    // Initialize Hangman when section is shown
+    if(id === 'hangman') {
+        // Give a small delay to ensure DOM is ready
+        setTimeout(() => {
+            initializeHangman();
+        }, 100);
+    }
+    
+    if(id === 'courses') initializeCourses();
+    if(id === 'admin' && adminAuthenticated) {
+        loadAdminDashboard();
+        startAdminPolling();
+    } else if(id !== 'admin' && adminAuthenticated) {
+        if (adminPollingInterval) {
+            clearInterval(adminPollingInterval);
+            adminPollingInterval = null;
+        }
+    }
+    if(id === 'test') {
+        checkCompletedPatterns();
+        checkExamWindowStatus();
+        if (!examWindowInterval) {
+            examWindowInterval = setInterval(checkExamWindowStatus, 1000);
+        }
+    }
+}
+
+  // Courses Data and Functions
+const coursesData = {
+  c: [
+    {
+      title: "C Programming For Beginners - Full Course",
+      instructor: "freeCodeCamp",
+      url: "https://youtu.be/KJgsSFOSQv0",
+      description: "Master C programming from scratch with hands-on exercises and practical examples.",
+      rating: "4.9",
+      duration: "4 hours",
+      level: "Beginner",
+      tags: ["c", "beginner", "complete-course"]
+    },
+    {
+      title: "C Programming Tutorial for Beginners",
+      instructor: "Programming with Mosh",
+      url: "https://youtu.be/KJgsSFOSQv0",
+      description: "Learn C fundamentals with clear explanations and real-world programming concepts.",
+      rating: "4.8",
+      duration: "3.5 hours",
+      level: "Beginner",
+      tags: ["c", "basics", "tutorial"]
+    },
+    {
+      title: "Pointers in C / C++ [Full Course]",
+      instructor: "freeCodeCamp",
+      url: "https://youtu.be/zuegQmMdy8M",
+      description: "Complete guide to understanding pointers, memory allocation, and advanced C concepts.",
+      rating: "4.9",
+      duration: "3 hours",
+      level: "Intermediate",
+      tags: ["c", "pointers", "memory-management"]
+    },
+    {
+      title: "Data Structures in C",
+      instructor: "CodeWithHarry",
+      url: "https://youtu.be/B31LgI4Y4DQ",
+      description: "Implement linked lists, stacks, queues, trees, and graphs in C with practical examples.",
+      rating: "4.7",
+      duration: "10 hours",
+      level: "Intermediate",
+      tags: ["c", "data-structures", "algorithms"]
+    },
+    {
+      title: "C Programming: File Handling",
+      instructor: "Neso Academy",
+      url: "https://youtu.be/7Y7fuTzFdKI",
+      description: "Learn file operations, reading/writing files, and file manipulation techniques in C.",
+      rating: "4.6",
+      duration: "2 hours",
+      level: "Intermediate",
+      tags: ["c", "file-handling", "io"]
+    },
+    {
+      title: "Dynamic Memory Allocation in C",
+      instructor: "Jenny's Lectures",
+      url: "https://youtu.be/8jLOx1hD3_o",
+      description: "Understand malloc, calloc, realloc, and free with memory management best practices.",
+      rating: "4.7",
+      duration: "1.5 hours",
+      level: "Intermediate",
+      tags: ["c", "memory", "dynamic-allocation"]
+    },
+    {
+      title: "C Programming Projects for Beginners",
+      instructor: "Tech With Tim",
+      url: "https://youtu.be/87SH2Cn0s9A",
+      description: "Build practical projects including calculator, student database, and game development.",
+      rating: "4.8",
+      duration: "6 hours",
+      level: "Beginner",
+      tags: ["c", "projects", "practice"]
+    },
+    {
+      title: "Advanced C Programming Techniques",
+      instructor: "Jacob Sorber",
+      url: "https://youtu.be/Qp3WatLL_Hc",
+      description: "Explore advanced topics: bit manipulation, function pointers, and optimization.",
+      rating: "4.9",
+      duration: "5 hours",
+      level: "Advanced",
+      tags: ["c", "advanced", "optimization"]
+    },
+    {
+      title: "C Programming for Embedded Systems",
+      instructor: "Fastbit Embedded",
+      url: "https://youtu.be/YGJQRHFXh8w",
+      description: "Learn C programming specifically for microcontroller and embedded system development.",
+      rating: "4.8",
+      duration: "8 hours",
+      level: "Advanced",
+      tags: ["c", "embedded", "microcontrollers"]
+    },
+    {
+      title: "Complete C Programming Course with Exercises",
+      instructor: "Apna College",
+      url: "https://youtu.be/7Dh73z3icd8",
+      description: "Comprehensive course with coding exercises, assignments, and interview questions.",
+      rating: "4.9",
+      duration: "12 hours",
+      level: "All Levels",
+      tags: ["c", "complete", "exercises"]
+    }
+  ],
+  
+  cpp: [
+    {
+      title: "C++ Programming Course - Beginner to Advanced",
+      instructor: "freeCodeCamp",
+      url: "https://youtu.be/vLnPwxZdW4Y",
+      description: "Complete C++ tutorial covering from basics to STL and OOP concepts.",
+      rating: "4.9",
+      duration: "31 hours",
+      level: "All Levels",
+      tags: ["cpp", "complete", "stl"]
+    },
+    {
+      title: "C++ Tutorial for Beginners - Full Course",
+      instructor: "CodeBeauty",
+      url: "https://youtu.be/GQp1zzTwrIg",
+      description: "Learn C++ with clear explanations and practical coding examples for absolute beginners.",
+      rating: "4.8",
+      duration: "10 hours",
+      level: "Beginner",
+      tags: ["cpp", "beginner", "tutorial"]
+    },
+    {
+      title: "Object Oriented Programming in C++",
+      instructor: "Caleb Curry",
+      url: "https://youtu.be/wN0x9eZLix4",
+      description: "Master classes, objects, inheritance, polymorphism, and encapsulation in C++.",
+      rating: "4.8",
+      duration: "6 hours",
+      level: "Intermediate",
+      tags: ["cpp", "oop", "classes"]
+    },
+    {
+      title: "C++ STL Tutorial",
+      instructor: "CppNuts",
+      url: "https://youtu.be/8jLOx1hD3_o",
+      description: "Complete Standard Template Library tutorial with containers, algorithms, and iterators.",
+      rating: "4.9",
+      duration: "8 hours",
+      level: "Intermediate",
+      tags: ["cpp", "stl", "containers"]
+    },
+    {
+      title: "C++ Game Programming Tutorial",
+      instructor: "Javidx9",
+      url: "https://youtu.be/uxnzXgLXN6A",
+      description: "Learn game development using C++ with graphics, physics, and game mechanics.",
+      rating: "4.9",
+      duration: "12 hours",
+      level: "Intermediate",
+      tags: ["cpp", "gamedev", "graphics"]
+    },
+    {
+      title: "Modern C++ Programming (C++11/14/17)",
+      instructor: "Bo Qian",
+      url: "https://youtu.be/1tKJz6aDZaI",
+      description: "Learn modern C++ features including auto, lambdas, smart pointers, and move semantics.",
+      rating: "4.8",
+      duration: "7 hours",
+      level: "Advanced",
+      tags: ["cpp", "modern", "c++11"]
+    },
+    {
+      title: "Data Structures and Algorithms in C++",
+      instructor: "Abdul Bari",
+      url: "https://youtu.be/AT14lCXuMKI",
+      description: "Implement and analyze algorithms and data structures using C++.",
+      rating: "4.9",
+      duration: "20 hours",
+      level: "Intermediate",
+      tags: ["cpp", "algorithms", "dsa"]
+    },
+    {
+      title: "C++ Multithreading and Concurrency",
+      instructor: "The Cherno",
+      url: "https://youtu.be/LL8wkskDlbs",
+      description: "Learn thread management, synchronization, and concurrent programming in C++.",
+      rating: "4.8",
+      duration: "5 hours",
+      level: "Advanced",
+      tags: ["cpp", "multithreading", "concurrency"]
+    },
+    {
+      title: "C++ Design Patterns",
+      instructor: "Derek Banas",
+      url: "https://youtu.be/L5_vyWbB0lU",
+      description: "Learn creational, structural, and behavioral design patterns implementation in C++.",
+      rating: "4.7",
+      duration: "4 hours",
+      level: "Advanced",
+      tags: ["cpp", "design-patterns", "architecture"]
+    },
+    {
+      title: "C++ Projects: Build 10 Applications",
+      instructor: "ProgrammingKnowledge",
+      url: "https://youtu.be/_bYFu9mBnr4",
+      description: "Build practical applications including calculator, banking system, and games.",
+      rating: "4.8",
+      duration: "15 hours",
+      level: "Intermediate",
+      tags: ["cpp", "projects", "applications"]
+    }
+  ],
+  
+  python: [
+    {
+      title: "Python for Everybody - Full University Course",
+      instructor: "freeCodeCamp",
+      url: "https://youtu.be/8DvywoWv6fI",
+      description: "Comprehensive Python course covering basics to web scraping and databases.",
+      rating: "4.9",
+      duration: "15 hours",
+      level: "Beginner",
+      tags: ["python", "complete", "university"]
+    },
+    {
+      title: "Python Tutorial - Python Full Course for Beginners",
+      instructor: "Programming with Mosh",
+      url: "https://youtu.be/_uQrJ0TkZlc",
+      description: "Python fundamentals with practical exercises and real-world applications.",
+      rating: "4.9",
+      duration: "6 hours",
+      level: "Beginner",
+      tags: ["python", "beginners", "fundamentals"]
+    },
+    {
+      title: "Python Data Science and Machine Learning",
+      instructor: "freeCodeCamp",
+      url: "https://youtu.be/LHBE6Q9XlzI",
+      description: "Learn NumPy, Pandas, Matplotlib, Scikit-learn for data analysis and ML.",
+      rating: "4.9",
+      duration: "12 hours",
+      level: "Intermediate",
+      tags: ["python", "data-science", "machine-learning"]
+    },
+    {
+      title: "Python Django Full Course for Beginners",
+      instructor: "CodeWithHarry",
+      url: "https://youtu.be/JxzZxdht-XY",
+      description: "Build web applications using Django framework with database integration.",
+      rating: "4.8",
+      duration: "8 hours",
+      level: "Intermediate",
+      tags: ["python", "django", "web"]
+    },
+    {
+      title: "Python Automation Tutorial",
+      instructor: "Tech With Tim",
+      url: "https://youtu.be/PXMJ6FS7llk",
+      description: "Automate tasks with Python including web scraping, file handling, and GUI automation.",
+      rating: "4.8",
+      duration: "6 hours",
+      level: "Intermediate",
+      tags: ["python", "automation", "scripts"]
+    },
+    {
+      title: "Python Game Development with PyGame",
+      instructor: "Tech With Tim",
+      url: "https://youtu.be/jO6qQDNa2UY",
+      description: "Create games using PyGame library with graphics, sounds, and game physics.",
+      rating: "4.7",
+      duration: "5 hours",
+      level: "Intermediate",
+      tags: ["python", "gamedev", "pygame"]
+    },
+    {
+      title: "Python Web Scraping Tutorial",
+      instructor: "Corey Schafer",
+      url: "https://youtu.be/ng2o98k983k",
+      description: "Learn BeautifulSoup and Scrapy for extracting data from websites.",
+      rating: "4.8",
+      duration: "3 hours",
+      level: "Intermediate",
+      tags: ["python", "web-scraping", "beautifulsoup"]
+    },
+    {
+      title: "Python GUI Development with Tkinter",
+      instructor: "Codemy.com",
+      url: "https://youtu.be/yQSEXcf6s2I",
+      description: "Build desktop applications with graphical user interfaces using Tkinter.",
+      rating: "4.7",
+      duration: "7 hours",
+      level: "Intermediate",
+      tags: ["python", "gui", "tkinter"]
+    },
+    {
+      title: "Advanced Python Programming",
+      instructor: "CS Dojo",
+      url: "https://youtu.be/0K_eZGS5NsU",
+      description: "Learn decorators, generators, context managers, and metaprogramming.",
+      rating: "4.8",
+      duration: "4 hours",
+      level: "Advanced",
+      tags: ["python", "advanced", "decorators"]
+    },
+    {
+      title: "Python Flask Full Course",
+      instructor: "freeCodeCamp",
+      url: "https://youtu.be/Qr4QMBUPxWo",
+      description: "Build web applications and REST APIs using Flask microframework.",
+      rating: "4.9",
+      duration: "5 hours",
+      level: "Intermediate",
+      tags: ["python", "flask", "api"]
+    }
+  ],
+  
+  java: [
+    {
+      title: "Java Programming for Beginners - Full Course",
+      instructor: "freeCodeCamp",
+      url: "https://youtu.be/A74TOX803D0",
+      description: "Complete Java tutorial covering fundamentals, OOP, and data structures.",
+      rating: "4.9",
+      duration: "12 hours",
+      level: "Beginner",
+      tags: ["java", "beginners", "complete"]
+    },
+    {
+      title: "Java Tutorial for Complete Beginners",
+      instructor: "Cave of Programming",
+      url: "https://youtu.be/WPuDt6Sf5ao",
+      description: "Learn Java from scratch with hands-on coding exercises and projects.",
+      rating: "4.8",
+      duration: "16 hours",
+      level: "Beginner",
+      tags: ["java", "tutorial", "basics"]
+    },
+    {
+      title: "Java Spring Boot Full Course",
+      instructor: "Amigoscode",
+      url: "https://youtu.be/9SGDpanrc8U",
+      description: "Build REST APIs and microservices using Spring Boot framework.",
+      rating: "4.9",
+      duration: "7 hours",
+      level: "Intermediate",
+      tags: ["java", "spring-boot", "api"]
+    },
+    {
+      title: "Java Data Structures and Algorithms",
+      instructor: "Dinesh Varyani",
+      url: "https://youtu.be/RBSGKlAvoiM",
+      description: "Implement and analyze algorithms and data structures in Java.",
+      rating: "4.8",
+      duration: "10 hours",
+      level: "Intermediate",
+      tags: ["java", "algorithms", "data-structures"]
+    },
+    {
+      title: "Java GUI Development with Swing",
+      instructor: "Bro Code",
+      url: "https://youtu.be/Kmgo00avvEw",
+      description: "Create desktop applications with graphical interfaces using Java Swing.",
+      rating: "4.7",
+      duration: "5 hours",
+      level: "Intermediate",
+      tags: ["java", "gui", "swing"]
+    },
+    {
+      title: "Java Multithreading Tutorial",
+      instructor: "Defog Tech",
+      url: "https://youtu.be/TCd8QIS-2KI",
+      description: "Learn concurrent programming, thread synchronization, and executors.",
+      rating: "4.8",
+      duration: "4 hours",
+      level: "Advanced",
+      tags: ["java", "multithreading", "concurrency"]
+    },
+    {
+      title: "Java Design Patterns",
+      instructor: "Derek Banas",
+      url: "https://youtu.be/vNHpsC5ng_E",
+      description: "Implement common design patterns in Java with practical examples.",
+      rating: "4.7",
+      duration: "4 hours",
+      level: "Advanced",
+      tags: ["java", "design-patterns", "architecture"]
+    },
+    {
+      title: "Java Database Connectivity (JDBC)",
+      instructor: "Telusko",
+      url: "https://youtu.be/LZYCKGm7d5Q",
+      description: "Connect Java applications to databases using JDBC with MySQL.",
+      rating: "4.8",
+      duration: "3 hours",
+      level: "Intermediate",
+      tags: ["java", "jdbc", "database"]
+    },
+    {
+      title: "Java Android App Development",
+      instructor: "Slidenerd",
+      url: "https://youtu.be/QAbQgLGKd3Y",
+      description: "Build Android applications using Java and Android Studio.",
+      rating: "4.8",
+      duration: "15 hours",
+      level: "Intermediate",
+      tags: ["java", "android", "mobile"]
+    },
+    {
+      title: "Java Microservices with Spring Cloud",
+      instructor: "Java Brains",
+      url: "https://youtu.be/mPPhcU7oWDU",
+      description: "Build microservices architecture using Spring Cloud and Netflix OSS.",
+      rating: "4.9",
+      duration: "8 hours",
+      level: "Advanced",
+      tags: ["java", "microservices", "spring-cloud"]
+    }
+  ],
+  
+  javascript: [
+    {
+      title: "JavaScript Full Course for Beginners",
+      instructor: "freeCodeCamp",
+      url: "https://youtu.be/PkZNo7MFNFg",
+      description: "Complete JavaScript tutorial covering ES6+ features and DOM manipulation.",
+      rating: "4.9",
+      duration: "8 hours",
+      level: "Beginner",
+      tags: ["javascript", "beginners", "es6"]
+    },
+    {
+      title: "JavaScript Tutorial for Beginners",
+      instructor: "Programming with Mosh",
+      url: "https://youtu.be/W6NZfCO5SIk",
+      description: "Master JavaScript fundamentals with practical coding exercises.",
+      rating: "4.9",
+      duration: "4 hours",
+      level: "Beginner",
+      tags: ["javascript", "tutorial", "fundamentals"]
+    },
+    {
+      title: "Modern JavaScript From The Beginning",
+      instructor: "Traversy Media",
+      url: "https://youtu.be/8dWL3wF_OMw",
+      description: "Learn JavaScript with projects including weather app and task tracker.",
+      rating: "4.9",
+      duration: "22 hours",
+      level: "All Levels",
+      tags: ["javascript", "modern", "projects"]
+    },
+    {
+      title: "JavaScript DOM Manipulation",
+      instructor: "Web Dev Simplified",
+      url: "https://youtu.be/5fb2aPlgoys",
+      description: "Master DOM manipulation, event handling, and dynamic content creation.",
+      rating: "4.8",
+      duration: "3 hours",
+      level: "Intermediate",
+      tags: ["javascript", "dom", "web"]
+    },
+    {
+      title: "JavaScript Algorithms and Data Structures",
+      instructor: "freeCodeCamp",
+      url: "https://youtu.be/8hly31xKli0",
+      description: "Learn algorithms, data structures, and problem-solving in JavaScript.",
+      rating: "4.9",
+      duration: "9 hours",
+      level: "Intermediate",
+      tags: ["javascript", "algorithms", "dsa"]
+    },
+    {
+      title: "Async JavaScript and Promises",
+      instructor: "Colt Steele",
+      url: "https://youtu.be/PoRJizFvM7s",
+      description: "Master asynchronous programming, callbacks, promises, and async/await.",
+      rating: "4.9",
+      duration: "5 hours",
+      level: "Intermediate",
+      tags: ["javascript", "async", "promises"]
+    },
+    {
+      title: "JavaScript Design Patterns",
+      instructor: "Derek Banas",
+      url: "https://youtu.be/tv-_1er1mWI",
+      description: "Learn and implement design patterns in JavaScript applications.",
+      rating: "4.8",
+      duration: "4 hours",
+      level: "Advanced",
+      tags: ["javascript", "design-patterns", "architecture"]
+    },
+    {
+      title: "Node.js Tutorial for Beginners",
+      instructor: "Mosh Hamedani",
+      url: "https://youtu.be/TlB_eWDSMt4",
+      description: "Build server-side applications with Node.js and Express framework.",
+      rating: "4.9",
+      duration: "3 hours",
+      level: "Intermediate",
+      tags: ["javascript", "nodejs", "backend"]
+    },
+    {
+      title: "JavaScript Testing with Jest",
+      instructor: "Web Dev Simplified",
+      url: "https://youtu.be/7r4xVDI2vho",
+      description: "Learn unit testing, integration testing, and test-driven development.",
+      rating: "4.8",
+      duration: "2 hours",
+      level: "Intermediate",
+      tags: ["javascript", "testing", "jest"]
+    },
+    {
+      title: "JavaScript Game Development",
+      instructor: "Chris Courses",
+      url: "https://youtu.be/eI9idPTT0c4",
+      description: "Create games using JavaScript with Canvas API and game physics.",
+      rating: "4.8",
+      duration: "6 hours",
+      level: "Intermediate",
+      tags: ["javascript", "gamedev", "canvas"]
+    }
+  ],
+  
+  web: [
+    {
+      title: "HTML & CSS Full Course - Beginner to Pro",
+      instructor: "SuperSimpleDev",
+      url: "https://youtu.be/G3e-cpL7ofc",
+      description: "Complete web development course covering HTML5 and CSS3 with projects.",
+      rating: "4.9",
+      duration: "7 hours",
+      level: "Beginner",
+      tags: ["html", "css", "web"]
+    },
+    {
+      title: "Tailwind CSS Full Course for Beginners",
+      instructor: "Web Dev Simplified",
+      url: "https://youtu.be/dFgzHOX84xQ",
+      description: "Master utility-first CSS framework with responsive design projects.",
+      rating: "4.9",
+      duration: "4 hours",
+      level: "Beginner",
+      tags: ["tailwind", "css", "framework"]
+    },
+    {
+      title: "Responsive Web Design Tutorial",
+      instructor: "Kevin Powell",
+      url: "https://youtu.be/srvUrASNj0s",
+      description: "Learn responsive design techniques, flexbox, grid, and media queries.",
+      rating: "4.9",
+      duration: "6 hours",
+      level: "Intermediate",
+      tags: ["css", "responsive", "web-design"]
+    },
+    {
+      title: "CSS Grid Complete Guide",
+      instructor: "Wes Bos",
+      url: "https://youtu.be/T-slCsOrLcc",
+      description: "Master CSS Grid layout system with real-world examples.",
+      rating: "4.9",
+      duration: "4 hours",
+      level: "Intermediate",
+      tags: ["css", "grid", "layout"]
+    },
+    {
+      title: "Flexbox Complete Tutorial",
+      instructor: "Wes Bos",
+      url: "https://youtu.be/JJSoEo8JSnc",
+      description: "Learn Flexbox for creating flexible and responsive layouts.",
+      rating: "4.9",
+      duration: "3 hours",
+      level: "Intermediate",
+      tags: ["css", "flexbox", "layout"]
+    },
+    {
+      title: "Advanced CSS Animations",
+      instructor: "DesignCourse",
+      url: "https://youtu.be/YszONjKpgg4",
+      description: "Create smooth animations, transitions, and keyframe animations.",
+      rating: "4.8",
+      duration: "3 hours",
+      level: "Advanced",
+      tags: ["css", "animations", "transitions"]
+    },
+    {
+      title: "Sass/SCSS Complete Tutorial",
+      instructor: "The Net Ninja",
+      url: "https://youtu.be/roywYSEPSvc",
+      description: "Learn CSS preprocessor with variables, mixins, and functions.",
+      rating: "4.8",
+      duration: "5 hours",
+      level: "Intermediate",
+      tags: ["css", "sass", "scss"]
+    },
+    {
+      title: "CSS Architecture - BEM Methodology",
+      instructor: "Kevin Powell",
+      url: "https://youtu.be/SLjHSVwXYq4",
+      description: "Learn scalable and maintainable CSS with BEM naming convention.",
+      rating: "4.8",
+      duration: "2 hours",
+      level: "Intermediate",
+      tags: ["css", "bem", "architecture"]
+    },
+    {
+      title: "Frontend Web Development Bootcamp",
+      instructor: "Colt Steele",
+      url: "https://youtu.be/zJSY8tbf_ys",
+      description: "Complete frontend development with HTML, CSS, JavaScript, and React.",
+      rating: "4.9",
+      duration: "40 hours",
+      level: "All Levels",
+      tags: ["html", "css", "javascript", "react"]
+    },
+    {
+      title: "Accessible Web Design",
+      instructor: "Web Dev Simplified",
+      url: "https://youtu.be/16a0b1n7uuc",
+      description: "Learn web accessibility standards and techniques for inclusive design.",
+      rating: "4.8",
+      duration: "3 hours",
+      level: "Intermediate",
+      tags: ["html", "accessibility", "web"]
+    }
+  ],
+  
+  frameworks: [
+    {
+      title: "React JS Full Course for Beginners",
+      instructor: "freeCodeCamp",
+      url: "https://youtu.be/bMknfKXIFA8",
+      description: "Complete React tutorial with hooks, context API, and modern practices.",
+      rating: "4.9",
+      duration: "10 hours",
+      level: "Beginner",
+      tags: ["react", "javascript", "frontend"]
+    },
+    {
+      title: "Vue.js Course for Beginners",
+      instructor: "freeCodeCamp",
+      url: "https://youtu.be/FXpIoQ_rT_c",
+      description: "Learn Vue.js framework with components, directives, and Vue Router.",
+      rating: "4.9",
+      duration: "5 hours",
+      level: "Beginner",
+      tags: ["vue", "javascript", "framework"]
+    },
+    {
+      title: "Angular Full Course",
+      instructor: "freeCodeCamp",
+      url: "https://youtu.be/3qBXWUpoPHo",
+      description: "Complete Angular tutorial with TypeScript, services, and routing.",
+      rating: "4.9",
+      duration: "8 hours",
+      level: "Intermediate",
+      tags: ["angular", "typescript", "framework"]
+    },
+    {
+      title: "Next.js Tutorial for Beginners",
+      instructor: "Sonny Sangha",
+      url: "https://youtu.be/__mSgDEOyv8",
+      description: "Learn React framework with server-side rendering and static generation.",
+      rating: "4.9",
+      duration: "6 hours",
+      level: "Intermediate",
+      tags: ["nextjs", "react", "ssr"]
+    },
+    {
+      title: "Express.js Crash Course",
+      instructor: "Traversy Media",
+      url: "https://youtu.be/L72fhGm1tfE",
+      description: "Build REST APIs and web applications with Express.js framework.",
+      rating: "4.9",
+      duration: "2 hours",
+      level: "Intermediate",
+      tags: ["express", "nodejs", "backend"]
+    },
+    {
+      title: "Django Full Course for Beginners",
+      instructor: "freeCodeCamp",
+      url: "https://youtu.be/F5mRW0jo-U4",
+      description: "Build web applications with Django, Django REST framework, and authentication.",
+      rating: "4.9",
+      duration: "6 hours",
+      level: "Intermediate",
+      tags: ["django", "python", "backend"]
+    },
+    {
+      title: "Spring Boot Full Course",
+      instructor: "Amigoscode",
+      url: "https://youtu.be/9SGDpanrc8U",
+      description: "Build REST APIs and microservices using Spring Boot and Spring Security.",
+      rating: "4.9",
+      duration: "7 hours",
+      level: "Intermediate",
+      tags: ["spring-boot", "java", "backend"]
+    },
+    {
+      title: "Flutter Tutorial for Beginners",
+      instructor: "freeCodeCamp",
+      url: "https://youtu.be/VPvVD8t02U8",
+      description: "Build cross-platform mobile apps with Flutter and Dart programming.",
+      rating: "4.9",
+      duration: "8 hours",
+      level: "Beginner",
+      tags: ["flutter", "dart", "mobile"]
+    },
+    {
+      title: "Bootstrap 5 Tutorial",
+      instructor: "Traversy Media",
+      url: "https://youtu.be/Jyvffr3aCp0",
+      description: "Learn responsive web design using Bootstrap 5 framework.",
+      rating: "4.8",
+      duration: "3 hours",
+      level: "Beginner",
+      tags: ["bootstrap", "css", "responsive"]
+    },
+    {
+      title: "Redux Toolkit Tutorial",
+      instructor: "Codevolution",
+      url: "https://youtu.be/0awA5Uw6SJE",
+      description: "Master state management in React applications using Redux Toolkit.",
+      rating: "4.8",
+      duration: "4 hours",
+      level: "Intermediate",
+      tags: ["redux", "react", "state-management"]
+    }
+  ]
+};
+
+// Function to initialize courses section
+function initializeCourses() {
+  renderAllCourses();
+  setupSearch();
+  setupFilter();
+  setupContributeForm();
+}
+
+// Function to render all courses
+// Function to render all courses
+function renderAllCourses() {
+  const container = document.querySelector('#courses .grid');
+  const languageSections = document.getElementById('languageSections');
+  
+  if (!container || !languageSections) return;
+  
+  // Clear previous content
+  container.innerHTML = '';
+  languageSections.innerHTML = '';
+  
+  // Language names mapping
+  const languageNames = {
+    'c': 'C Programming',
+    'cpp': 'C++ Programming',
+    'python': 'Python Programming',
+    'java': 'Java Programming',
+    'javascript': 'JavaScript',
+    'web': 'Web Development (HTML/CSS/Tailwind)',
+    'frameworks': 'Frameworks & Libraries'
+  };
+  
+  // Create a search results section that will hold filtered results
+  const searchResultsSection = document.createElement('div');
+  searchResultsSection.id = 'search-results-section';
+  searchResultsSection.className = 'mb-8 hidden';
+  searchResultsSection.innerHTML = `
+    <h3 class="text-2xl font-bold text-emerald-600 mb-4 flex items-center gap-2">
+      <i data-lucide="search" class="w-6 h-6"></i>
+      Search Results
+    </h3>
+    <div id="search-results-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  `;
+  
+  // Insert search results section before language sections
+  languageSections.parentNode.insertBefore(searchResultsSection, languageSections);
+  
+  // Render featured courses (will be hidden when searching)
+  const featuredCourses = [
+    ...coursesData.c.slice(0, 2),
+    ...coursesData.cpp.slice(0, 2),
+    ...coursesData.python.slice(0, 2)
+  ];
+  
+  featuredCourses.forEach(course => {
+    const card = createCourseCard(course);
+    container.appendChild(card);
+  });
+  
+  // Render language sections
+  Object.keys(coursesData).forEach(lang => {
+    const section = createLanguageSection(lang, languageNames[lang], coursesData[lang]);
+    languageSections.appendChild(section);
+  });
+  
+  // Refresh icons
+  setTimeout(() => lucide.createIcons(), 100);
+}
+
+// Function to create course card
+// Function to create course card - MOBILE OPTIMIZED
+function createCourseCard(course) {
+  const card = document.createElement('div');
+  card.className = 'bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 overflow-hidden group w-full';
+  
+  card.innerHTML = `
+    <div class="p-4 sm:p-6">
+      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-2">
+        <div class="flex-1 min-w-0">
+          <h3 class="font-bold text-lg text-gray-800 mb-2 group-hover:text-emerald-600 truncate-2-lines">
+            ${course.title}
+          </h3>
+          <p class="text-sm text-emerald-600 font-medium mb-1 truncate">${course.instructor}</p>
+        </div>
+        <div class="flex items-center bg-emerald-50 text-emerald-700 px-2 py-1 rounded self-start sm:self-center">
+          <i data-lucide="star" class="w-4 h-4 mr-1 flex-shrink-0"></i>
+          <span class="text-sm font-semibold whitespace-nowrap">${course.rating}</span>
+        </div>
+      </div>
+      
+      <p class="text-sm text-gray-600 mb-4 truncate-3-lines">${course.description}</p>
+      
+      <div class="flex flex-wrap gap-2 mb-4">
+        <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded whitespace-nowrap">${course.level}</span>
+        <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded whitespace-nowrap">${course.duration}</span>
+        ${course.tags.slice(0, 2).map(tag => 
+          `<span class="px-2 py-1 bg-emerald-50 text-emerald-700 text-xs rounded whitespace-nowrap">${tag}</span>`
+        ).join('')}
+      </div>
+      
+      <div class="flex justify-between items-center">
+        <a href="${course.url}" target="_blank" 
+          class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg text-sm font-semibold text-center transition duration-300 flex items-center justify-center gap-2">
+          <i data-lucide="play-circle" class="w-4 h-4 flex-shrink-0"></i>
+          <span class="truncate">Watch Tutorial</span>
+        </a>
+      </div>
+    </div>
+  `;
+  
+  return card;
+}
+// Function to create language section
+// Function to create language section - MOBILE OPTIMIZED VERSION
+function createLanguageSection(langKey, langName, courses) {
+  const section = document.createElement('div');
+  section.className = 'mb-12';
+  section.id = `${langKey}-section`;
+  
+  section.innerHTML = `
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+      <div class="flex items-center gap-3">
+        <div class="bg-emerald-100 p-2 rounded-lg">
+          <i data-lucide="code" class="text-emerald-600 w-5 h-5 sm:w-6 sm:h-6"></i>
+        </div>
+        <div>
+          <h3 class="text-xl sm:text-2xl font-bold text-gray-800">${langName}</h3>
+          <span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full text-xs font-medium mt-1 inline-block">
+            ${courses.length} tutorials
+          </span>
+        </div>
+      </div>
+      <button onclick="toggleSection('${langKey}')" 
+              class="text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1 self-start sm:self-center text-sm sm:text-base">
+        <i data-lucide="chevron-down" class="w-4 h-4 sm:w-5 sm:h-5" id="icon-${langKey}"></i>
+        <span>Expand</span>
+      </button>
+    </div>
+    
+    <div id="content-${langKey}" class="hidden">
+      <div class="grid grid-cols-1 gap-4 mb-6">
+        ${courses.slice(0, 10).map((course, index) => `
+          <div class="bg-white p-4 sm:p-6 rounded-xl shadow border border-gray-200 hover:shadow-md transition-shadow duration-300 w-full">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-2">
+              <div class="flex-1 min-w-0">
+                <h4 class="font-bold text-gray-800 mb-1 truncate-2-lines">
+                  ${index + 1}. ${course.title}
+                </h4>
+                <p class="text-sm text-emerald-600 mb-2 truncate">By ${course.instructor}</p>
+              </div>
+              <span class="text-xs px-2 py-1 rounded-full ${getLevelColor(course.level)} self-start sm:self-center whitespace-nowrap">
+                ${course.level}
+              </span>
+            </div>
+            <p class="text-sm text-gray-600 mb-4 truncate-3-lines">${course.description}</p>
+            <div class="flex flex-col xs:flex-row justify-between items-start xs:items-center gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-xs text-gray-500 whitespace-nowrap">${course.duration}</span>
+                <span class="flex items-center text-sm whitespace-nowrap">
+                  <i data-lucide="star" class="w-3 h-3 text-yellow-500 mr-1 flex-shrink-0"></i>
+                  ${course.rating}
+                </span>
+              </div>
+              <a href="${course.url}" target="_blank" 
+                class="text-emerald-600 hover:text-emerald-700 font-medium text-sm flex items-center gap-1 whitespace-nowrap">
+                <i data-lucide="external-link" class="w-4 h-4 flex-shrink-0"></i>
+                Watch Now
+              </a>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      
+      <div class="bg-emerald-50 p-4 sm:p-6 rounded-xl border border-emerald-200">
+        <h4 class="font-bold text-lg text-emerald-800 mb-3">Recommended Learning Path for ${langName}</h4>
+        <ol class="space-y-2 text-sm text-emerald-700">
+          <li class="flex items-center gap-2">
+            <span class="bg-emerald-600 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0">1</span>
+            <span>Start with basics: syntax, variables, data types</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="bg-emerald-600 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0">2</span>
+            <span>Learn control structures: loops and conditionals</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="bg-emerald-600 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0">3</span>
+            <span>Master functions/methods and scope</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="bg-emerald-600 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0">4</span>
+            <span>Practice with mini-projects and exercises</span>
+          </li>
+          <li class="flex items-center gap-2">
+            <span class="bg-emerald-600 text-white w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0">5</span>
+            <span>Build complete applications and portfolio projects</span>
+          </li>
+        </ol>
+      </div>
+    </div>
+  `;
+  
+  return section;
+}
+
+// Helper function to shuffle array
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+// Helper function for level color
+function getLevelColor(level) {
+  switch(level.toLowerCase()) {
+    case 'beginner': return 'bg-green-100 text-green-800';
+    case 'intermediate': return 'bg-yellow-100 text-yellow-800';
+    case 'advanced': return 'bg-red-100 text-red-800';
+    default: return 'bg-blue-100 text-blue-800';
+  }
+}
+
+// Toggle section visibility
+function toggleSection(langKey) {
+  const content = document.getElementById(`content-${langKey}`);
+  const icon = document.getElementById(`icon-${langKey}`);
+  
+  if (content.classList.contains('hidden')) {
+    content.classList.remove('hidden');
+    icon.setAttribute('data-lucide', 'chevron-up');
+    icon.parentElement.querySelector('span').textContent = 'Collapse';
+  } else {
+    content.classList.add('hidden');
+    icon.setAttribute('data-lucide', 'chevron-down');
+    icon.parentElement.querySelector('span').textContent = 'Expand';
+  }
+  lucide.createIcons();
+}
+
+// Setup search functionality
+// Setup search functionality
+function setupSearch() {
+  const searchInput = document.getElementById('courseSearch');
+  const filterSelect = document.getElementById('languageFilter');
+  
+  if (searchInput) {
+    searchInput.addEventListener('input', function(e) {
+      const searchTerm = e.target.value;
+      
+      // If user starts typing, clear the language filter
+      if (searchTerm && filterSelect) {
+        filterSelect.value = '';
+      }
+      
+      filterCourses(searchTerm, '');
+    });
+  }
+}
+
+// Setup filter functionality
+function setupFilter() {
+  const filterSelect = document.getElementById('languageFilter');
+  const searchInput = document.getElementById('courseSearch');
+  
+  if (filterSelect) {
+    filterSelect.addEventListener('change', function(e) {
+      const filter = e.target.value;
+      
+      // If a language is selected, clear the search input
+      if (filter && searchInput) {
+        searchInput.value = '';
+      }
+      
+      filterCourses('', filter);
+    });
+  }
+}
+// Filter courses based on search and filter
+// Filter courses based on search and filter
+function filterCourses(searchTerm, filter = '') {
+  const searchResultsSection = document.getElementById('search-results-section');
+  const searchResultsContainer = document.getElementById('search-results-container');
+  const mainCoursesGrid = document.querySelector('#courses .grid');
+  const languageSections = document.getElementById('languageSections');
+  const sections = document.querySelectorAll('#languageSections > div');
+  
+  searchTerm = searchTerm ? searchTerm.toLowerCase().trim() : '';
+  
+  // If there's a search term or filter, show search results
+  if (searchTerm || filter) {
+    // Hide the main featured courses
+    mainCoursesGrid.style.display = 'none';
+    
+    // Show search results section
+    searchResultsSection.classList.remove('hidden');
+    searchResultsContainer.innerHTML = '';
+    
+    // Collect all matching courses
+    let allMatchingCourses = [];
+    
+    // Search through all courses
+    Object.keys(coursesData).forEach(langKey => {
+      // Skip if filter is set and doesn't match
+      if (filter && filter !== '' && filter !== langKey) return;
+      
+      coursesData[langKey].forEach(course => {
+        // Check if course matches search term
+        const matchesSearch = !searchTerm || 
+          course.title.toLowerCase().includes(searchTerm) ||
+          course.description.toLowerCase().includes(searchTerm) ||
+          course.instructor.toLowerCase().includes(searchTerm) ||
+          course.level.toLowerCase().includes(searchTerm) ||
+          course.tags.some(tag => tag.toLowerCase().includes(searchTerm));
+        
+        if (matchesSearch) {
+          // Add language info to course object for display
+          const courseWithLang = {
+            ...course,
+            language: langKey
+          };
+          allMatchingCourses.push(courseWithLang);
+        }
+      });
+    });
+    
+    // Display matching courses
+    if (allMatchingCourses.length > 0) {
+      // Sort by relevance (title matches first, then other matches)
+      allMatchingCourses.sort((a, b) => {
+        const aTitleMatch = searchTerm && a.title.toLowerCase().includes(searchTerm);
+        const bTitleMatch = searchTerm && b.title.toLowerCase().includes(searchTerm);
+        
+        if (aTitleMatch && !bTitleMatch) return -1;
+        if (!aTitleMatch && bTitleMatch) return 1;
+        return 0;
+      });
+      
+      // Create cards for matching courses
+      allMatchingCourses.forEach(course => {
+        const card = createSearchResultCard(course);
+        searchResultsContainer.appendChild(card);
+      });
+      
+      // Update search results header
+      searchResultsSection.querySelector('h3').innerHTML = `
+        <i data-lucide="search" class="w-6 h-6"></i>
+        Search Results (${allMatchingCourses.length} courses found)
+      `;
+      
+      // Hide all language sections
+      sections.forEach(section => {
+        section.classList.add('hidden');
+      });
+    } else {
+      // No results found
+      searchResultsContainer.innerHTML = `
+        <div class="col-span-full text-center py-10">
+          <i data-lucide="search-x" class="w-16 h-16 mx-auto text-gray-400 mb-4"></i>
+          <h3 class="text-xl font-bold text-gray-600 mb-2">No courses found</h3>
+          <p class="text-gray-500">Try a different search term or select another language filter</p>
+        </div>
+      `;
+    }
+    
+    // Refresh icons
+    lucide.createIcons();
+  } else {
+    // No search term or filter - show normal view
+    searchResultsSection.classList.add('hidden');
+    mainCoursesGrid.style.display = 'grid';
+    
+    // Show all language sections
+    sections.forEach(section => {
+      section.classList.remove('hidden');
+      
+      // Show all courses in each section
+      section.querySelectorAll('.bg-white.p-6, .bg-white.p-4').forEach(course => {
+        course.classList.remove('hidden');
+      });
+    });
+  }
+}
+
+  // Function to create search result card
+function createSearchResultCard(course) {
+  const card = document.createElement('div');
+  card.className = 'bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 overflow-hidden group';
+  
+  // Language badge colors
+  const languageColors = {
+    'c': 'bg-blue-100 text-blue-800',
+    'cpp': 'bg-purple-100 text-purple-800',
+    'python': 'bg-yellow-100 text-yellow-800',
+    'java': 'bg-red-100 text-red-800',
+    'javascript': 'bg-yellow-100 text-yellow-800',
+    'web': 'bg-green-100 text-green-800',
+    'frameworks': 'bg-indigo-100 text-indigo-800'
+  };
+  
+  const langColor = languageColors[course.language] || 'bg-gray-100 text-gray-800';
+  
+  card.innerHTML = `
+    <div class="p-6">
+      <div class="flex justify-between items-start mb-3">
+        <div>
+          <span class="px-3 py-1 ${langColor} rounded-full text-xs font-medium mb-2 inline-block">
+            ${course.language.toUpperCase()}
+          </span>
+          <h3 class="font-bold text-lg text-gray-800 mb-2 group-hover:text-emerald-600 line-clamp-2">
+            ${course.title}
+          </h3>
+        </div>
+        <div class="flex items-center bg-emerald-50 text-emerald-700 px-2 py-1 rounded">
+          <i data-lucide="star" class="w-4 h-4 mr-1"></i>
+          <span class="text-sm font-semibold">${course.rating}</span>
+        </div>
+      </div>
+      
+      <p class="text-sm text-emerald-600 font-medium mb-2">${course.instructor}</p>
+      <p class="text-sm text-gray-600 mb-4 line-clamp-3">${course.description}</p>
+      
+      <div class="flex flex-wrap gap-2 mb-4">
+        <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">${course.level}</span>
+        <span class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">${course.duration}</span>
+        ${course.tags.slice(0, 3).map(tag => 
+          `<span class="px-2 py-1 bg-emerald-50 text-emerald-700 text-xs rounded">${tag}</span>`
+        ).join('')}
+      </div>
+      
+      <div class="flex justify-between items-center">
+        <a href="${course.url}" target="_blank" 
+          class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg text-sm font-semibold text-center transition duration-300 flex items-center justify-center gap-2">
+          <i data-lucide="play-circle" class="w-4 h-4"></i>
+          Watch Tutorial
+        </a>
+      </div>
+    </div>
+  `;
+  
+  return card;
+}
+
+  // Form handling functions
+function setupContributeForm() {
+  const form = document.getElementById('contributeForm');
+  if (!form) return;
+  
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const submitButton = document.getElementById('submitButton');
+    const originalButtonText = submitButton.innerHTML;
+    
+    // Disable button and show loading
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i data-lucide="loader" class="w-4 h-4 mr-2 animate-spin"></i> Submitting...';
+    lucide.createIcons();
+    
+    // Hide previous messages
+    document.getElementById('formSuccess').classList.add('hidden');
+    document.getElementById('formError').classList.add('hidden');
+    
+    try {
+      // Submit to Formspree
+      const response = await fetch(this.action, {
+        method: 'POST',
+        body: new FormData(this),
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        // Show success message
+        document.getElementById('formSuccess').classList.remove('hidden');
+        
+        // Reset form
+        this.reset();
+        
+        // Scroll to success message
+        document.getElementById('formSuccess').scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+        
+        // Update icons
+        setTimeout(() => lucide.createIcons(), 100);
+      } else {
+        throw new Error('Form submission failed');
+      }
+    } catch (error) {
+      // Show error message
+      document.getElementById('formError').classList.remove('hidden');
+      console.error('Form submission error:', error);
+    } finally {
+      // Re-enable button
+      submitButton.disabled = false;
+      submitButton.innerHTML = originalButtonText;
+      lucide.createIcons();
+    }
+  });
+}
+
+function resetContributeForm() {
+  const form = document.getElementById('contributeForm');
+  if (form) {
+    form.reset();
+    
+    // Hide messages
+    document.getElementById('formSuccess').classList.add('hidden');
+    document.getElementById('formError').classList.add('hidden');
+    
+    // Focus on first field
+    const firstInput = form.querySelector('input, select, textarea');
+    if (firstInput) firstInput.focus();
+    
+    // Refresh icons
+    setTimeout(() => lucide.createIcons(), 100);
+  }
+}
+</script>
+  <!-- Footer Section -->
+<footer class="mt-auto border-t bg-gray-50 py-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col md:flex-row justify-between items-center">
+      <!-- Copyright Info -->
+      <div class="mb-4 md:mb-0">
+        <p class="text-sm text-gray-600 flex items-center gap-1">
+          <i data-lucide="copyright" class="w-4 h-4"></i>
+          <span id="currentYear">2024</span> Xamplore - All Rights Reserved
+        </p>
+      </div>
+      
+      <!-- Author Link -->
+      <div class="flex items-center gap-2">
+        <p class="text-sm text-gray-600">Made by</p>
+        <a 
+          href="https://ellen-dev.vercel.app" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="text-emerald-600 hover:text-emerald-700 font-semibold text-sm flex items-center gap-1 hover:underline transition duration-300"
+        >
+          <i data-lucide="user" class="w-4 h-4"></i>
+          Ellen Iconoclust
+        </a>
+      </div>
+      
+      <!-- Version Info -->
+      <div class="mt-4 md:mt-0">
+        <p class="text-xs text-gray-500 flex items-center gap-1">
+          <i data-lucide="code" class="w-3 h-3"></i>
+          Platform Version: Xam4.0
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
